@@ -1,0 +1,22 @@
+{
+  "_read_me": "STARTING ESTIMATES. Confirm with your crews before launch. Dollars before GST. Run `node build.mjs` after editing.",
+  "gst": 0.05,
+  "season": {
+    "label": "November 1 to March 31",
+    "triggerCm": 5
+  },
+  "once": {
+    "driveway": { "single": 40, "double": 50, "triple": 65, "rv": 80 },
+    "sidewalk": { "none": 0, "regular": 10, "corner": 20 },
+    "walkway": { "none": 0, "regular": 5, "long": 10 },
+    "steps": 5,
+    "iceMelt": 10
+  },
+  "winter": {
+    "driveway": { "single": 475, "double": 600, "triple": 775, "rv": 925 },
+    "sidewalk": { "none": 0, "regular": 125, "corner": 250 },
+    "walkway": { "none": 0, "regular": 75, "long": 125 },
+    "steps": 60,
+    "iceMelt": 150
+  }
+}

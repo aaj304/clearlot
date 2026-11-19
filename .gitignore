@@ -1,0 +1,4 @@
+node_modules/
+clearlot-bookings/
+public_html/api/data/
+.DS_Store

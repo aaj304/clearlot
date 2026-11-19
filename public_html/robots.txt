@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /api/
+Disallow: /thank-you/
+
+Sitemap: https://clearlotyqr.ca/sitemap.xml
