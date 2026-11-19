@@ -55,7 +55,12 @@ writeFileSync(
     .map((p) => `  <url><loc>${base}${p.path}</loc></url>`)
     .join("\n")}\n</urlset>\n`,
 );
-writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nDisallow: /api/\nDisallow: /thank-you/\n\nSitemap: ${base}/sitemap.xml\n`);
+writeFileSync(
+  join(OUT, "robots.txt"),
+  site.preview
+    ? "# Preview copy: keep it out of search results.\nUser-agent: *\nDisallow: /\n"
+    : `User-agent: *\nDisallow: /api/\nDisallow: /thank-you/\n\nSitemap: ${base}/sitemap.xml\n`,
+);
 
 writeFileSync(
   join(OUT, ".htaccess"),
