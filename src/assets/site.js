@@ -15,7 +15,7 @@
     var now = new Date();
     var later = new Date(now.getTime() + 24 * 3600 * 1000);
     live.forEach(function (t) {
-      t.querySelector("[data-booked]").textContent = "Now, " + window.clearlotTime(now);
+      t.querySelector("[data-booked]").textContent = window.clearlotTime(now);
       t.querySelector("[data-cleared]").textContent = window.clearlotTime(later);
     });
   }

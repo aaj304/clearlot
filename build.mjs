@@ -43,7 +43,7 @@ const labels = {
   sidewalk: Object.fromEntries(Object.entries(CATALOG.sidewalk).map(([k, v]) => [k, v.label])),
   walkway: Object.fromEntries(Object.entries(CATALOG.walkway).map(([k, v]) => [k, v.label])),
 };
-writeFileSync(join(OUT, "api/catalog.json"), JSON.stringify({ gst: prices.gst, prices: { once: prices.once, winter: prices.winter }, labels }, null, 2));
+writeFileSync(join(OUT, "api/catalog.json"), JSON.stringify({ gst: prices.gst, months: prices.season.months, prices: { once: prices.once, winter: prices.winter }, labels }, null, 2));
 const php = (s) => `'${String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
 writeFileSync(
   join(OUT, "api/config.php"),

@@ -18,35 +18,55 @@ export const ICON = {
 
 export const tel = (phone) => `tel:${phone.replace(/[^\d+]/g, "")}`;
 
-/** The signature: a ticket that turns the 24-hour promise into a real time. */
-export function ticket({ booked = "Book now", cleared = "Within 24 hours", live = false, caption = "" } = {}) {
-  return `<div class="ticket"${live ? " data-live-ticket" : ""}>
-  <div class="ticket-row"><span class="ticket-label">Booked</span><span class="ticket-value" data-booked>${booked}</span></div>
-  <div class="ticket-tear" aria-hidden="true"></div>
-  <div class="ticket-row"><span class="ticket-label">Cleared by</span><span class="ticket-value ticket-strong" data-cleared>${cleared}</span></div>
-  ${caption ? `<p class="ticket-caption">${caption}</p>` : ""}
+/**
+ * The signature: a numbered work order. It turns the 24-hour promise into a real time
+ * and shows the job line by line, like the carbon copy a crew carries.
+ */
+export function workOrder({ ref = "Example", lines = [], total = "", unit = "", monthly = "", booked = "Now", cleared = "Within 24 hours", live = false } = {}) {
+  const rows = lines.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+  return `<div class="wo"${live ? " data-live-ticket" : ""}>
+  <div class="wo-head"><span>Work order</span><span class="wo-ref" data-ref>No. ${ref}</span></div>
+  <dl class="wo-lines" data-lines>${rows}</dl>
+  <div class="wo-total"${total ? "" : " hidden"} data-total-row><span><span data-total-unit>${unit}</span><span class="wo-monthly" data-monthly>${monthly}</span></span><strong data-total>${total}</strong></div>
+  <div class="wo-times">
+    <div><span>Booked</span><strong data-booked>${booked}</strong></div>
+    <div><span>Cleared by</span><strong data-cleared class="wo-due">${cleared}</strong></div>
+  </div>
 </div>`;
 }
 
-/** Little top-down diagrams for the option cards, drawn in the same style as the lot. */
-const car = (x, y, color = "#5d6976") =>
-  `<rect x="${x}" y="${y}" width="13" height="24" rx="4" fill="${color}"/><rect x="${x + 2}" y="${y + 5}" width="9" height="6" rx="1.5" fill="#c9d4df"/>`;
+/** Small plan-style diagrams for the option cards: ink outlines, the chosen surface in orange. */
+const O = "#ef6a22";
+const I = "#17253a";
+const house = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="${I}" stroke-width="1.5"/>`;
+const fill = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${O}" stroke="${I}" stroke-width="1.2"/>`;
+const car = (x, y) => `<rect x="${x}" y="${y}" width="10" height="17" rx="3" fill="#fbfaf6" stroke="${I}" stroke-width="1.2"/>`;
+const svg = (inner) => `<svg viewBox="0 0 64 48" aria-hidden="true">${inner}</svg>`;
+const dots = [[16, 16], [28, 22], [40, 14], [48, 28], [20, 32], [34, 32], [44, 22], [24, 24]]
+  .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.7" fill="${I}"/>`)
+  .join("");
+const sheet = `<rect x="10" y="8" width="44" height="34" rx="3" fill="none" stroke="${I}" stroke-width="1.5"/><line x1="10" y1="17" x2="54" y2="17" stroke="${I}" stroke-width="1.5"/>`;
+const months = [0, 1, 2, 3, 4]
+  .map((i) => `<rect x="${14 + i * 8}" y="22" width="5" height="5" fill="${O}"/><rect x="${14 + i * 8}" y="31" width="5" height="5" fill="${O}"/>`)
+  .join("");
 
 export const DIAGRAM = {
-  single: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="22" y="4" width="20" height="40" rx="3" fill="#dbe3eb"/>${car(25.5, 12)}</svg>`,
-  double: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="12" y="4" width="40" height="40" rx="3" fill="#dbe3eb"/>${car(16, 12)}${car(35, 12, "#8796a5")}</svg>`,
-  triple: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="2" y="4" width="60" height="40" rx="3" fill="#dbe3eb"/>${car(6, 12)}${car(25.5, 12, "#8796a5")}${car(45, 12)}</svg>`,
-  rv: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="2" y="4" width="60" height="40" rx="3" fill="#dbe3eb"/><rect x="6" y="6" width="15" height="36" rx="3" fill="#8796a5"/><rect x="8" y="10" width="11" height="6" rx="1.5" fill="#c9d4df"/>${car(27, 12)}${car(45, 12, "#8796a5")}</svg>`,
-  sidewalkNone: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="6" width="36" height="24" rx="2" fill="#dbe3eb"/></svg>`,
-  sidewalkRegular: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="6" width="36" height="24" rx="2" fill="#dbe3eb"/><rect x="4" y="36" width="56" height="7" rx="2" fill="#5d6976"/></svg>`,
-  sidewalkCorner: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="10" y="6" width="36" height="24" rx="2" fill="#dbe3eb"/><rect x="2" y="36" width="58" height="7" rx="2" fill="#5d6976"/><rect x="53" y="2" width="7" height="41" rx="2" fill="#5d6976"/></svg>`,
-  walkwayNone: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="4" width="36" height="24" rx="2" fill="#dbe3eb"/></svg>`,
-  walkwayRegular: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="4" width="36" height="24" rx="2" fill="#dbe3eb"/><rect x="29" y="28" width="6" height="18" rx="1.5" fill="#5d6976"/></svg>`,
-  walkwayLong: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="10" y="4" width="36" height="24" rx="2" fill="#dbe3eb"/><rect x="25" y="28" width="6" height="18" rx="1.5" fill="#5d6976"/><rect x="50" y="4" width="6" height="42" rx="1.5" fill="#5d6976"/></svg>`,
-  steps: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="14" y="4" width="36" height="20" rx="2" fill="#dbe3eb"/><rect x="20" y="26" width="24" height="6" rx="1.5" fill="#5d6976"/><rect x="20" y="34" width="24" height="6" rx="1.5" fill="#8796a5"/></svg>`,
-  iceMelt: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="8" y="8" width="48" height="32" rx="3" fill="#5d6976"/>${[[16,16],[28,22],[40,14],[48,28],[20,32],[34,34],[44,22],[24,24]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.8" fill="#dbe3eb"/>`).join("")}</svg>`,
-  once: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="10" y="8" width="44" height="34" rx="4" fill="#dbe3eb"/><rect x="10" y="8" width="44" height="9" rx="4" fill="#5d6976"/><circle cx="32" cy="30" r="6" fill="#5d6976"/></svg>`,
-  winter: `<svg viewBox="0 0 64 48" aria-hidden="true"><rect x="10" y="8" width="44" height="34" rx="4" fill="#dbe3eb"/><rect x="10" y="8" width="44" height="9" rx="4" fill="#5d6976"/>${[0,1,2,3,4].map(i=>`<circle cx="${17 + i * 7.5}" cy="27" r="2.6" fill="#5d6976"/>`).join("")}${[0,1,2,3,4].map(i=>`<circle cx="${17 + i * 7.5}" cy="35" r="2.6" fill="#8796a5"/>`).join("")}</svg>`,
+  single: svg(fill(25, 6, 14, 38) + car(27, 16)),
+  double: svg(fill(16, 6, 32, 38) + car(19, 16) + car(35, 16)),
+  triple: svg(fill(6, 6, 52, 38) + car(9, 16) + car(27, 16) + car(45, 16)),
+  rv: svg(fill(4, 6, 14, 38) + fill(20, 6, 34, 38) + `<rect x="6" y="9" width="10" height="28" rx="2" fill="#fbfaf6" stroke="${I}" stroke-width="1.2"/>` + car(23, 16) + car(40, 16)),
+  sidewalkNone: svg(house(16, 6, 32, 24) + `<line x1="4" y1="40" x2="60" y2="40" stroke="#8a93a3" stroke-dasharray="3 3"/>`),
+  sidewalkRegular: svg(house(16, 6, 32, 24) + fill(4, 36, 56, 7)),
+  sidewalkCorner: svg(house(10, 6, 32, 24) + fill(2, 36, 54, 7) + fill(53, 2, 7, 41)),
+  walkwayNone: svg(house(14, 4, 36, 24)),
+  walkwayRegular: svg(house(14, 4, 36, 24) + fill(29, 28, 6, 18)),
+  walkwayLong: svg(house(8, 4, 36, 24) + fill(23, 28, 6, 18) + fill(50, 4, 6, 42)),
+  steps: svg(house(14, 4, 36, 22) + fill(22, 26, 20, 6) + fill(22, 34, 20, 6)),
+  iceMelt: svg(fill(8, 8, 48, 32) + dots),
+  once: svg(sheet + fill(27, 23, 10, 12)),
+  winter: svg(sheet + months),
 };
 
 export const money = (n) => `$${n.toLocaleString("en-CA")}`;
+/** Whole-winter prices can be paid in this many monthly payments, November to March. */
+export const monthlyOf = (winter, months) => Math.round(winter / months);

@@ -12,7 +12,7 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 
 function logo() {
   return `<a class="logo" href="/" aria-label="ClearLot YQR home">
-    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M4 14 15 5l11 9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="10" y="17" width="10" height="11" rx="1.5" fill="#f2a71b"/></svg>
+    <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="7" width="10" height="24" fill="#ef6a22"/><rect x="1" y="23" width="30" height="5" fill="currentColor"/></svg>
     <span>ClearLot <span class="logo-yqr">YQR</span></span>
   </a>`;
 }
@@ -113,9 +113,10 @@ ${page.noindex || site.preview ? '<meta name="robots" content="noindex">' : ""}
 <meta property="og:url" content="${url}">
 <meta property="og:image" content="${site.siteUrl.replace(/\/$/, "")}/assets/share.png">
 <meta property="og:locale" content="en_CA">
-<meta name="theme-color" content="#f3f6f9">
+<meta name="theme-color" content="#f6f4ef">
 <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
-<link rel="preload" href="/assets/fonts/figtree.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/public-sans.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/newsreader.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/style.css?v=${page.version}">
 ${schema}
 ${gtag(site)}

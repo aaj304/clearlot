@@ -1,12 +1,14 @@
 import { CATALOG, priceFor } from "./catalog.mjs";
 import { renderLot } from "./lot.mjs";
-import { DIAGRAM, ICON, money, tel, ticket } from "./ui.mjs";
+import { DIAGRAM, ICON, money, monthlyOf, tel, workOrder } from "./ui.mjs";
 
 export function buildPages(site, prices) {
   const P = prices;
   const cm = P.season.triggerCm;
   const seasonLabel = P.season.label;
-  const winterDesc = CATALOG.plan.winter.desc.replace("{cm}", cm).replace("{season}", seasonLabel);
+  const months = P.season.months;
+  const perMonth = (n) => money(monthlyOf(n, months));
+  const winterDesc = CATALOG.plan.winter.desc.replace("{cm}", cm).replace("{season}", seasonLabel) + `. Pay in full, or in ${months} monthly payments`;
   const phone = site.phone;
   const callBtn = (cls = "btn-quiet") => (phone ? `<a class="btn ${cls}" href="${tel(phone)}" data-call>${ICON.phone} Call ${phone}</a>` : "");
   const base = site.siteUrl.replace(/\/$/, "");
@@ -46,7 +48,7 @@ export function buildPages(site, prices) {
     ["Do I need to be home?", `<p>No. If we need to get through a gate, add the gate code or where the latch is in your booking notes.</p>`],
     ["How do I pay?", `<p>Nothing is charged online. After you book, we call you to confirm the details and arrange payment.</p>`],
     ["Can I book for my parents or a neighbour?", `<p>Yes. In the booking, tick “I’m booking for someone else” and add their name and phone number. We can call you, them, or both.</p>`],
-    ["What does the whole winter plan cover?", `<p>Every snowfall of ${cm} cm or more from ${seasonLabel}, for the areas you picked. You pay one price for the winter, and it does not go up if it snows a lot.</p>`],
+    ["What does the whole winter plan cover?", `<p>Every snowfall of ${cm} cm or more from ${seasonLabel}, for the areas you picked. You pay one price for the winter, and it does not go up if it snows a lot. Pay it all at once, or in ${months} monthly payments from November to March.</p>`],
     ["What is the difference between one-time and whole winter?", `<p>One-time is a single visit after a snowfall, when you need it. Whole winter means you don’t have to remember to book: we come after every snowfall of ${cm} cm or more.</p>`],
     ["Do you use ice melt?", `<p>Only if you ask for it. Add ice melt in the extras step and we spread it on your driveway and paths after clearing.</p>`],
     ["Do prices include GST?", `<p>No. Prices are in Canadian dollars, and 5% GST is added.</p>`],
@@ -63,7 +65,7 @@ export function buildPages(site, prices) {
     mainEntity: FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a.replace(/<[^>]+>/g, "") } })),
   };
 
-  const ctaBand = (title = "Get your snow cleared within 24 hours") => `<section class="section-tight on-night">
+  const ctaBand = (title = "Get your snow cleared within 24 hours") => `<section class="section-tight on-navy">
   <div class="wrap cta-row">
     <h2>${title}</h2>
     <div class="hero-actions" style="margin-top:0!important">
@@ -73,18 +75,17 @@ export function buildPages(site, prices) {
   </div>
 </section>`;
 
-  const priceRows = (key, opts) =>
+  const winterCell = (n) => `<td class="amount">${money(n)}<small>or ${perMonth(n)} a month</small></td>`;
+  const priceRows = (key) =>
     Object.entries(CATALOG[key])
       .filter(([v]) => v !== "none")
-      .map(
-        ([v, o]) =>
-          `<tr><th scope="row">${o.label}<span>${o.desc}</span></th><td class="amount">${money(P.once[key][v])}</td><td class="amount">${money(P.winter[key][v])}</td></tr>`,
-      )
+      .map(([v, o]) => `<tr><th scope="row">${o.label}<span>${o.desc}</span></th><td class="amount">${money(P.once[key][v])}</td>${winterCell(P.winter[key][v])}</tr>`)
       .join("");
   const extraRows = Object.entries(CATALOG.extras)
-    .map(([k, o]) => `<tr><th scope="row">${o.label}<span>${o.desc}</span></th><td class="amount">${money(P.once[k])}</td><td class="amount">${money(P.winter[k])}</td></tr>`)
+    .map(([k, o]) => `<tr><th scope="row">${o.label}<span>${o.desc}</span></th><td class="amount">${money(P.once[k])}</td>${winterCell(P.winter[k])}</tr>`)
     .join("");
-  const fullPriceTable = `<table class="price-table">
+  const fullPriceTable = `<table class="rate">
+  <caption>Rate card</caption>
   <thead><tr><th scope="col">What we clear</th><th scope="col" class="amount">One time</th><th scope="col" class="amount">Whole winter</th></tr></thead>
   <tbody>
     <tr class="group"><th colspan="3" scope="colgroup">Driveway (pick one)</th></tr>${priceRows("driveway")}
@@ -94,11 +95,9 @@ export function buildPages(site, prices) {
   </tbody>
 </table>`;
   const exampleBox = `<div class="example">
-  <p class="text-2" style="max-width:24rem">Example: a double driveway, a regular sidewalk and a front walkway</p>
-  <div class="example-figures">
-    <div><strong>${money(exOnce)}</strong><span class="muted small">one time</span></div>
-    <div><strong>${money(exWinter)}</strong><span class="muted small">whole winter</span></div>
-  </div>
+  <p class="text-2">Example: a double driveway, a regular sidewalk and a front walkway</p>
+  <div><strong>${money(exOnce)}</strong><span class="muted">one time</span></div>
+  <div><strong>${money(exWinter)}</strong><span class="muted">whole winter, or ${perMonth(exWinter)} a month for ${months} months</span></div>
 </div>`;
 
   const optionCard = (name, value, o, diagram, { type = "radio", once, winter, unit = true } = {}) => {
@@ -107,7 +106,7 @@ export function buildPages(site, prices) {
         ? ""
         : once === 0 && winter === 0
           ? `<span class="option-price"><small>No charge</small></span>`
-          : `<span class="option-price"><span data-show-plan="once">${unit ? "" : "+"}${money(once)}<small>${unit ? "per visit" : "per visit"}</small></span><span data-show-plan="winter">${unit ? "" : "+"}${money(winter)}<small>for the winter</small></span></span>`;
+          : `<span class="option-price"><span data-show-plan="once">${unit ? "" : "+"}${money(once)}<small>${unit ? "per visit" : "per visit"}</small></span><span data-show-plan="winter">${unit ? "" : "+"}${money(winter)}<small>winter, or ${perMonth(winter)}/mo</small></span></span>`;
     return `<label class="option">
   <input type="${type}" name="${name}" value="${value}"${type === "radio" ? " required" : ""}>
   ${diagram}
@@ -134,66 +133,80 @@ export function buildPages(site, prices) {
     description: `Driveway, sidewalk and walkway snow removal in Regina, cleared within 24 hours of booking. See your price in two minutes. One-time or whole winter.`,
     schema: [business],
     body: `<section class="hero">
-  <div class="wrap hero-grid">
-    <div class="hero-copy">
-      <p class="eyebrow">Snow removal in Regina</p>
-      <h1>Your driveway cleared within 24 hours of booking</h1>
-      <p class="lede">Enter your address, pick your driveway, sidewalk and walkway, and see your price before you book. We clear it within a day.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/book/">Book snow removal ${ICON.right}</a>
-        ${phone ? callBtn() : `<a class="btn btn-quiet" href="/prices/">See prices</a>`}
+  <div class="wrap">
+    <div class="hero-top">
+      <div>
+        <p class="eyebrow">Snow removal in Regina</p>
+        <h1 style="margin-top:16px">Cleared within 24 hours of booking</h1>
       </div>
-      <p class="hero-note">No account to set up. Nothing to pay online.</p>
+      <div class="hero-side">
+        <p class="lede">Driveways, city sidewalks and walkways for Regina homes. Pick your sizes, see the exact price on your work order, and we clear it within a day.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/book/">Book snow removal ${ICON.right}</a>
+          ${phone ? callBtn() : `<a class="btn btn-quiet" href="/prices/">See prices</a>`}
+        </div>
+        <p class="hero-note">No account to set up. Nothing to pay online.</p>
+      </div>
     </div>
-    <div class="hero-visual">
-      <div class="lot-frame">${renderLot({ driveway: "double", sidewalk: "regular", walkway: "regular", steps: true }, "hero")}</div>
-      ${ticket({ booked: "Now", cleared: "Within 24 hours", live: true })}
+    <div class="sheet">
+      <div class="sheet-plan">
+        ${renderLot({ driveway: "double", sidewalk: "regular", walkway: "regular", steps: true }, "hero")}
+        <p class="sheet-caption"><span>Site plan, example home</span><span>Orange is what we clear</span></p>
+      </div>
+      <div class="sheet-side">
+        ${workOrder({
+          ref: "Example",
+          lines: [
+            ["Double driveway", money(P.once.driveway.double)],
+            ["Regular sidewalk", money(P.once.sidewalk.regular)],
+            ["Front walkway", money(P.once.walkway.regular)],
+            ["Front steps", money(P.once.steps)],
+          ],
+          total: money(exOnce + P.once.steps),
+          unit: "Per visit, plus GST",
+          monthly: `Whole winter ${money(exWinter + P.winter.steps)}, or ${perMonth(exWinter + P.winter.steps)} a month`,
+          booked: "Now",
+          cleared: "Within 24 hours",
+          live: true,
+        })}
+      </div>
     </div>
   </div>
 </section>
 
-<section class="section section-white">
-  <div class="wrap split">
-    <div>
-      <div class="section-head">
-        <h2>Booking takes about two minutes</h2>
-        <p class="lede">One question at a time, in large print. If you’d rather talk to a person, ${phone ? `call <a href="${tel(phone)}" data-call>${phone}</a>` : "you can call us"}.</p>
-      </div>
-      <ol class="steps">
-        <li><div><h3>Tell us your address</h3><p class="text-2">Any home inside Regina city limits.</p></div></li>
-        <li><div><h3>Pick your sizes</h3><p class="text-2">Single, double or triple driveway. Regular or corner lot sidewalk. A front walkway if you have one.</p></div></li>
-        <li><div><h3>We call to confirm, then clear it</h3><p class="text-2">Your snow is cleared within 24 hours of booking. You pay after we confirm.</p></div></li>
-      </ol>
-    </div>
-    <div>
-      <p class="step-count" style="margin-bottom:12px">How big is your driveway?</p>
-      <div class="options">
-        ${Object.entries(CATALOG.driveway)
-          .map(([v, o]) => `<a class="option" href="/book/?driveway=${v}" style="text-decoration:none">${DIAGRAM[v]}<span><span class="option-title">${o.label}</span><span class="option-desc">${o.desc}</span></span><span class="option-price">${money(P.once.driveway[v])}<small>per visit</small></span></a>`)
-          .join("")}
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="wrap split">
+<section class="section section-rule">
+  <div class="wrap">
     <div class="section-head">
-      <h2>Prices you can see before you book</h2>
-      <p class="lede">You pay for the size of your driveway, plus your sidewalk and walkway if you want them cleared. Prices are plus GST.</p>
-      <p><a class="btn btn-quiet" href="/prices/">See all prices</a></p>
+      <h2>Booked in about two minutes</h2>
+      <p class="lede">One question at a time, in large print. If you’d rather talk to a person, ${phone ? `call <a href="${tel(phone)}" data-call>${phone}</a>` : "you can call us"}.</p>
+    </div>
+    <ol class="steps">
+      <li><div><h3>Tell us your address</h3><p class="text-2">Any home inside Regina city limits.</p></div></li>
+      <li><div><h3>Pick your sizes</h3><p class="text-2">Single, double or triple driveway. Regular or corner lot sidewalk. A front walkway if you have one.</p></div></li>
+      <li><div><h3>We call to confirm, then clear it</h3><p class="text-2">Cleared within 24 hours of booking. You pay after we confirm.</p></div></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section section-rule">
+  <div class="wrap split">
+    <div class="section-head side">
+      <h2>Your price depends on your driveway</h2>
+      <p class="lede">Pick your size to start a booking. Add your sidewalk and walkway on the next steps. Prices are plus GST.</p>
+      <p><a class="btn btn-quiet" href="/prices/">See every price</a></p>
     </div>
     <div class="stack">
-      ${exampleBox}
-      <table class="price-table">
-        <thead><tr><th scope="col">Driveway</th><th scope="col" class="amount">One time</th><th scope="col" class="amount">Whole winter</th></tr></thead>
-        <tbody>${priceRows("driveway")}</tbody>
-      </table>
+      <div class="options">
+        ${Object.entries(CATALOG.driveway)
+          .map(([v, o]) => `<a class="option" href="/book/?driveway=${v}">${DIAGRAM[v]}<span><span class="option-title">${o.label}</span><span class="option-desc">${o.desc}</span></span><span class="option-price">${money(P.once.driveway[v])}<small>per visit</small></span></a>`)
+          .join("")}
+      </div>
+      <div style="margin-top:32px">${exampleBox}</div>
     </div>
   </div>
 </section>
 
-<section class="section on-night">
+<section class="section on-navy">
   <div class="wrap">
     <div class="section-head">
       <p class="eyebrow">Our promise</p>
@@ -208,7 +221,7 @@ export function buildPages(site, prices) {
       <div>
         <p class="promise-figure num">${cm} cm</p>
         <h3>Whole winter</h3>
-        <p class="text-2">After every snowfall of ${cm} cm or more, from ${seasonLabel}, we clear your home within 24 hours after the snow stops. You don’t have to call.</p>
+        <p class="text-2">After every snowfall of ${cm} cm or more, from ${seasonLabel}, we clear your home within 24 hours after the snow stops. You don’t have to call. Pay in full or in ${months} monthly payments.</p>
       </div>
     </div>
   </div>
@@ -229,7 +242,7 @@ export function buildPages(site, prices) {
   </div>
 </section>
 
-<section class="section section-white">
+<section class="section section-rule">
   <div class="wrap split">
     <div class="section-head">
       <h2>Questions people ask</h2>
@@ -321,17 +334,13 @@ ${ctaBand()}`,
         </div>
       </div>
       <aside class="book-side" aria-label="Your booking so far">
-        <div class="lot-frame">${renderLot({}, "book", { title: "Drawing of your home. Each part clears as you choose it", crop: true })}</div>
-        ${ticket({ booked: "Now", cleared: "Within 24 hours", caption: "" })}
-        <div class="book-summary">
-          <dl data-summary><div><dt>Driveway</dt><dd>Not chosen yet</dd></div></dl>
-          <div class="book-total"><span class="muted" data-total-unit>Your price</span><strong data-total>$0</strong></div>
-        </div>
+        <div class="plan-frame">${renderLot({}, "book", { title: "Drawing of your home. Each part clears as you choose it", crop: true })}</div>
+        ${workOrder({ ref: "Draft", booked: "Now", cleared: "Within 24 hours", unit: "Per visit, plus GST" })}
       </aside>
     </form>
   </div>
 </section>
-<script type="application/json" id="prices">${JSON.stringify({ once: P.once, winter: P.winter, gst: P.gst })}</script>`,
+<script type="application/json" id="prices">${JSON.stringify({ once: P.once, winter: P.winter, gst: P.gst, months })}</script>`,
   });
 
   // ---------- Thank you ----------
@@ -352,14 +361,14 @@ ${ctaBand()}`,
       <h1>Thank you. We have your booking.</h1>
       <p class="lede">We’ll call you to confirm the details before we come. Nothing has been charged.</p>
       <p class="text-2" data-ref-line hidden>Your booking number is <strong data-ref></strong>.</p>
-      <ol class="steps" style="margin-top:40px">
+      <ol class="steps vertical" style="margin-top:40px">
         <li><div><h3>We call you</h3><p class="text-2">To confirm your address, your sizes and the price.</p></div></li>
         <li><div><h3>We clear the snow</h3><p class="text-2" data-plan-text>Within 24 hours of your booking.</p></div></li>
-        <li><div><h3>You pay</h3><p class="text-2">We arrange payment when we call.</p></div></li>
+        <li><div><h3>You pay</h3><p class="text-2" data-pay-text>We arrange payment when we call.</p></div></li>
       </ol>
       ${phone ? `<p class="text-2" style="margin-top:24px">Questions? Call <a href="${tel(phone)}" data-call>${phone}</a>.</p>` : ""}
     </div>
-    <div>${ticket({ booked: "Just now", cleared: "Within 24 hours", caption: "" })}</div>
+    <div>${workOrder({ ref: "", booked: "Just now", cleared: "Within 24 hours" })}</div>
   </div>
 </section>`,
   });
@@ -376,7 +385,7 @@ ${ctaBand()}`,
   <p class="lede">We clear your driveway from the garage to the street, edge to edge, within 24 hours of your booking. Pick your size and see the price before you book.</p>
   <div class="hero-actions"><a class="btn btn-primary" href="/book/">Book driveway clearing</a>${callBtn()}</div>
 </section>
-<section class="section section-white">
+<section class="section section-rule">
   <div class="wrap split">
     <div class="section-head">
       <h2>Which size is my driveway?</h2>
@@ -401,7 +410,7 @@ ${ctaBand()}`,
       <h2>One time or all winter</h2>
       <p>Book a one-time clearing whenever you need it, and we come within 24 hours. Or choose the whole winter plan and we clear your driveway after every snowfall of ${cm} cm or more, from ${seasonLabel}, without you having to call.</p>
     </div>
-    <table class="price-table">
+    <table class="rate">
       <caption>Driveway prices</caption>
       <thead><tr><th scope="col">Size</th><th scope="col" class="amount">One time</th><th scope="col" class="amount">Whole winter</th></tr></thead>
       <tbody>${priceRows("driveway")}</tbody>
@@ -423,7 +432,7 @@ ${ctaBand("Book your driveway clearing")}`,
   <p class="lede">A cleared sidewalk means your neighbours, mail carrier and delivery drivers can walk past your home safely. Add it to your driveway booking and we clear both within 24 hours.</p>
   <div class="hero-actions"><a class="btn btn-primary" href="/book/">Book snow removal</a>${callBtn()}</div>
 </section>
-<section class="section section-white">
+<section class="section section-rule">
   <div class="wrap split">
     <div class="section-head">
       <h2>Regular or corner lot?</h2>
@@ -443,7 +452,7 @@ ${ctaBand("Book your driveway clearing")}`,
       <p>The sidewalk is an add-on to driveway clearing. When you book, pick your driveway size, then regular or corner lot sidewalk. We clear the stretch of sidewalk beside your property, edge to edge.</p>
       <p>On the whole winter plan, your sidewalk is cleared after every snowfall of ${cm} cm or more, along with your driveway.</p>
     </div>
-    <table class="price-table">
+    <table class="rate">
       <caption>Sidewalk prices</caption>
       <thead><tr><th scope="col">Sidewalk</th><th scope="col" class="amount">One time</th><th scope="col" class="amount">Whole winter</th></tr></thead>
       <tbody>${priceRows("sidewalk")}</tbody>
@@ -472,8 +481,8 @@ ${
 }
 <section class="section">
   <div class="wrap split">
-    <div class="section-head"><h2>What to expect</h2></div>
-    <ol class="steps">
+    <div class="section-head side"><h2>What to expect</h2></div>
+    <ol class="steps vertical">
       <li><div><h3>You book</h3><p class="text-2">${phone ? "By phone or online. " : "Online, one question at a time. "}There’s no account to set up and nothing to download.</p></div></li>
       <li><div><h3>We call you to confirm</h3><p class="text-2">We go over your address, what you’d like cleared and the price, so there are no surprises.</p></div></li>
       <li><div><h3>We clear the snow</h3><p class="text-2">Within 24 hours of your booking. You don’t need to be home.</p></div></li>
@@ -481,7 +490,7 @@ ${
     </ol>
   </div>
 </section>
-<section class="section section-white">
+<section class="section section-rule">
   <div class="wrap split">
     <div class="section-head">
       <h2>Booking for a parent or neighbour</h2>
@@ -520,9 +529,9 @@ ${ctaBand("We’ll take care of the snow")}`,
         <h3>One time</h3>
         <p>A single visit, cleared within 24 hours of your booking.</p>
         <h3>Whole winter</h3>
-        <p>Every snowfall of ${cm} cm or more, from ${seasonLabel}, cleared within 24 hours after the snow stops. One price for the winter. It does not go up if it snows a lot.</p>
+        <p>Every snowfall of ${cm} cm or more, from ${seasonLabel}, cleared within 24 hours after the snow stops. One price for the winter, payable in full or in ${months} monthly payments. It does not go up if it snows a lot.</p>
         <h3>Paying</h3>
-        <p>Nothing is charged online. We call to confirm your booking and arrange payment.</p>
+        <p>Nothing is charged online. We call to confirm your booking and arrange payment. The whole winter plan can be paid all at once or in ${months} monthly payments, November to March.</p>
       </div>
     </div>
     ${fullPriceTable}

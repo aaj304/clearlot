@@ -1,18 +1,17 @@
 /**
- * The overhead drawing of a Regina lot in snow. Each surface is drawn cleared, and shown or
- * hidden by state, so picking "corner lot" or "triple driveway" clears that part of the picture.
+ * The site plan: an architect-style drawing of a Regina lot in navy ink on paper.
+ * Each surface the customer chooses is inked in high-visibility orange with its label,
+ * so the drawing becomes the job sheet.
  *
- * Groups carry data-k (which choice) and data-v (which value). A group is "on" when the state
- * has that value. data-v="?" means "not chosen yet", and "!x" means "anything except x".
+ * Groups carry data-k (which choice) and data-v (which value). A group is "on" when the
+ * state has that value. data-v="?" means "not chosen yet", and "!x" means "anything but x".
  * book.js applies the same rule in the browser.
  */
 
-const ASPHALT = "#4f5a66";
-const CONCRETE = "#c3cad2";
-const SNOW = "#fbfcfe";
-const BANK = "#ffffff";
-const BANK_SHADOW = "#c5d1dd";
-const HINT = "#e9eff5";
+const INK = "#17253a";
+const INK_SOFT = "#8a93a3";
+const ORANGE = "#ef6a22";
+const PAPER = "#fbfaf6";
 
 export function isOn(state, k, v) {
   const cur = state[k];
@@ -21,153 +20,130 @@ export function isOn(state, k, v) {
   return String(cur) === v;
 }
 
-function g(state, k, v, inner, extra = "") {
-  return `<g data-k="${k}" data-v="${v}" class="var${isOn(state, k, v) ? " on" : ""}"${extra}>${inner}</g>`;
-}
+const g = (state, k, v, inner) =>
+  `<g data-k="${k}" data-v="${v}" class="var${isOn(state, k, v) ? " on" : ""}">${inner}</g>`;
 
-const rect = (x, y, w, h, fill, rx = 0, extra = "") =>
-  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}"${extra}/>`;
+const rect = (x, y, w, h, attrs = "") => `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${attrs}/>`;
+const line = (x1, y1, x2, y2, attrs = "") => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${attrs}/>`;
 
-/** Plowed snow piled along an edge: a soft white ridge with a blue shadow on its south side. */
-function bank(x, y, w, h) {
-  return rect(x + 1, y + 3, w, h, BANK_SHADOW, Math.min(w, h) / 2) + rect(x, y, w, h, BANK, Math.min(w, h) / 2);
-}
+/** A surface inked onto the plan: orange fill, ink edge, optional ice melt dots. */
+const surface = (x, y, w, h, id) =>
+  rect(x, y, w, h, `fill="${ORANGE}" stroke="${INK}" stroke-width="1.5"`) +
+  rect(x, y, w, h, `fill="url(#${id}-ice)" class="ice"`);
 
-function ice(x, y, w, h, id) {
-  return rect(x, y, w, h, `url(#${id}-ice)`, 0, ' class="ice"');
-}
+/** A surface before it's chosen: a thin dashed outline. */
+const ghost = (x, y, w, h) => rect(x, y, w, h, `fill="none" stroke="${INK_SOFT}" stroke-width="1.2" stroke-dasharray="5 4"`);
 
-function driveway(x, w, id, pad = false) {
-  const top = 204;
-  const bottom = 350; // runs through the sidewalk and the plow ridge to the street
-  let s = "";
-  if (pad) s += rect(18, 140, 40, bottom - 140, ASPHALT) + ice(18, 140, 40, bottom - 140, id);
-  s += rect(x, top, w, bottom - top, ASPHALT) + ice(x, top, w, bottom - top, id);
-  // Faint tire marks on the bare pavement, one pair per car width.
-  const lanes = Math.max(1, Math.round(w / 48));
-  for (let i = 0; i < lanes; i++) {
-    const cx = x + (w / lanes) * (i + 0.5);
-    s += rect(cx - 12, top + 8, 4, 100, "#58636e", 2) + rect(cx + 8, top + 8, 4, 100, "#58636e", 2);
-  }
-  // Snow piled along both edges, stopping short of the sidewalk.
-  s += pad ? bank(8, 142, 9, 168) : bank(x - 10, top + 2, 9, 106);
-  s += bank(x + w + 1, top + 2, 9, 106);
-  return s;
-}
-
-/** A spruce seen from above, with snow resting on its branches. */
-function spruce(cx, cy, r) {
-  const star = (rad, inner) => {
-    const pts = [];
-    for (let i = 0; i < 20; i++) {
-      const a = (Math.PI * 2 * i) / 20;
-      const d = i % 2 ? rad * inner : rad;
-      pts.push(`${(cx + Math.cos(a) * d).toFixed(1)},${(cy + Math.sin(a) * d).toFixed(1)}`);
-    }
-    return pts.join(" ");
-  };
+/** A small label with a paper background so it reads over hatching. */
+function label(x, y, text, { anchor = "middle", size = 13, weight = 600, bg = PAPER, color = INK } = {}) {
+  const w = text.length * size * 0.56 + 12;
+  const bx = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x - 6;
   return (
-    `<ellipse cx="${cx - 4}" cy="${cy - 10}" rx="${r}" ry="${r * 0.8}" fill="#dfe7ef"/>` +
-    `<polygon points="${star(r, 0.72)}" fill="#2f4a3c"/>` +
-    `<polygon points="${star(r * 0.68, 0.7)}" fill="#3d5d4b"/>` +
-    `<circle cx="${cx + r * 0.25}" cy="${cy + r * 0.3}" r="${r * 0.22}" fill="#f4f8fb"/>` +
-    `<circle cx="${cx - r * 0.35}" cy="${cy + r * 0.1}" r="${r * 0.16}" fill="#f4f8fb"/>` +
-    `<circle cx="${cx + r * 0.05}" cy="${cy - r * 0.35}" r="${r * 0.14}" fill="#f4f8fb"/>`
+    (bg ? rect(bx, y - size + 1, w, size + 7, `fill="${bg}" rx="3"`) : "") +
+    `<text x="${x}" y="${y + 2}" text-anchor="${anchor}" font-size="${size}" font-weight="${weight}" fill="${color}">${text}</text>`
   );
 }
 
-export function renderLot(state = {}, id = "lot", { title = "Overhead drawing of a house in Regina with its driveway, sidewalk and walkway", crop = false } = {}) {
-  const parts = [];
-  parts.push(`<defs>
-    <pattern id="${id}-ice" width="9" height="9" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="0.9" fill="#8aa1b8" opacity=".6"/><circle cx="6" cy="6.5" r="0.7" fill="#b9c9d8" opacity=".7"/>
+/** A dimension line with end ticks and a caption, like on a drawing. */
+function dimension(x1, x2, y, text) {
+  const tick = (x) => line(x, y - 6, x, y + 6, `stroke="${INK}" stroke-width="1.2"`);
+  return line(x1, y, x2, y, `stroke="${INK}" stroke-width="1.2"`) + tick(x1) + tick(x2) + label((x1 + x2) / 2, y + 4, text, { size: 12, weight: 500 });
+}
+
+function driveway(x, w, cars, id, pad = false) {
+  const top = 250;
+  const bottom = 404;
+  let s = "";
+  if (pad) s += surface(58, 170, 46, bottom - 170, id) + label(81, 214, "RV pad", { size: 11, bg: "" });
+  s += surface(x, top, w, bottom - top, id);
+  s += dimension(pad ? 58 : x, x + w, 286, cars);
+  return s;
+}
+
+export function renderLot(state = {}, id = "lot", { title = "Site plan of a Regina home showing the driveway, sidewalk and walkway", crop = false } = {}) {
+  const p = [];
+  p.push(`<defs>
+    <pattern id="${id}-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="${INK}" stroke-width="1" opacity=".28"/>
+    </pattern>
+    <pattern id="${id}-ice" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.1" fill="${INK}" opacity=".55"/><circle cx="6" cy="6" r="1.1" fill="${INK}" opacity=".35"/>
     </pattern>
   </defs>`);
 
-  // Ground: fresh snow with soft drifts.
-  parts.push(rect(0, 0, 480, 400, SNOW));
-  parts.push(`<ellipse cx="120" cy="290" rx="60" ry="10" fill="${HINT}" opacity=".7"/>`);
+  // Street, curb lines and centre line.
+  p.push(rect(0, 404, 640, 76, `fill="#eceae3"`));
+  p.push(line(0, 404, 640, 404, `stroke="${INK}" stroke-width="1.5"`));
+  p.push(line(0, 446, 640, 446, `stroke="${INK_SOFT}" stroke-width="1.5" stroke-dasharray="18 12"`));
+  p.push(label(24, 470, "Street", { anchor: "start", size: 12, weight: 500, bg: "", color: "#5d6878" }));
 
-  // Front street with packed snow tracks.
-  parts.push(rect(0, 348, 480, 52, "#5b6672"));
-  parts.push(rect(0, 360, 480, 6, "#7f8a96", 3) + rect(0, 382, 480, 6, "#7f8a96", 3));
-  // The ridge the city plow leaves along the curb.
-  parts.push(bank(-4, 340, 488, 10));
+  // Neighbouring lots: property lines and hatched footprints.
+  p.push(line(80, 24, 80, 380, `stroke="${INK_SOFT}" stroke-width="1" stroke-dasharray="2 5"`));
+  p.push(rect(-40, 120, 92, 128, `fill="url(#${id}-hatch)" stroke="${INK_SOFT}" stroke-width="1"`));
+  p.push(
+    g(
+      state,
+      "sidewalk",
+      "!corner",
+      line(536, 24, 536, 380, `stroke="${INK_SOFT}" stroke-width="1" stroke-dasharray="2 5"`) +
+        rect(570, 116, 110, 132, `fill="url(#${id}-hatch)" stroke="${INK_SOFT}" stroke-width="1"`),
+    ),
+  );
 
-  // Neighbours, roofs only, cut off at the edges.
-  parts.push(rect(-80, 70, 72, 132, "#e6ecf2", 6) + rect(-80, 70, 72, 66, "#f5f8fb", 6));
-  parts.push(g(state, "sidewalk", "!corner", rect(452, 76, 90, 126, "#e6ecf2", 6) + rect(452, 76, 90, 63, "#f5f8fb", 6)));
-
-  // Shadows the house casts north in low winter sun.
-  parts.push(rect(46, 86, 156, 92, "#e1e8f0", 4) + rect(202, 38, 172, 140, "#e1e8f0", 4));
-
-  // Corner lot: side street and the side sidewalk appear.
-  parts.push(
+  // Sidewalk: before a choice, a faint outline of the public sidewalk.
+  p.push(g(state, "sidewalk", "?", ghost(0, 382, 640, 18)));
+  p.push(
+    g(
+      state,
+      "sidewalk",
+      "regular",
+      rect(0, 382, 640, 18, `fill="none" stroke="${INK_SOFT}" stroke-width="1"`) + surface(80, 382, 456, 18, id) + label(470, 378, "Sidewalk", { size: 11 }),
+    ),
+  );
+  p.push(
     g(
       state,
       "sidewalk",
       "corner",
-      rect(428, 0, 52, 400, "#5b6672") +
-        rect(440, 0, 6, 348, "#7f8a96", 3) +
-        rect(462, 0, 6, 348, "#7f8a96", 3) +
-        bank(420, -6, 10, 346) +
-        rect(404, 24, 16, 322, CONCRETE) +
-        ice(404, 24, 16, 322, id) +
-        rect(12, 318, 408, 16, CONCRETE) +
-        ice(12, 318, 408, 16, id),
+      rect(572, 0, 68, 480, `fill="#eceae3"`) +
+        line(572, 0, 572, 404, `stroke="${INK}" stroke-width="1.5"`) +
+        line(610, 0, 610, 480, `stroke="${INK_SOFT}" stroke-width="1.5" stroke-dasharray="18 12"`) +
+        rect(0, 382, 548, 18, `fill="none" stroke="${INK_SOFT}" stroke-width="1"`) +
+        surface(80, 382, 468, 18, id) +
+        surface(548, 24, 18, 376, id) +
+        label(470, 378, "Corner sidewalk", { size: 11 }),
     ),
   );
 
-  // Sidewalk, before a choice: a faint strip under the snow.
-  parts.push(g(state, "sidewalk", "?", rect(0, 318, 480, 16, HINT)));
-  parts.push(g(state, "sidewalk", "regular", rect(0, 318, 480, 16, HINT) + rect(12, 318, 396, 16, CONCRETE) + ice(12, 318, 396, 16, id)));
+  // Property line of this lot.
+  p.push(rect(80, 24, 456, 352, `fill="none" stroke="${INK}" stroke-width="1.2" stroke-dasharray="10 4 2 4"`));
 
-  // Driveway, before a choice: tire tracks pressed into snow.
-  parts.push(g(state, "driveway", "?", rect(60, 204, 100, 136, HINT, 2) + rect(80, 210, 6, 124, "#dde5ee", 3) + rect(130, 210, 6, 124, "#dde5ee", 3)));
-  parts.push(g(state, "driveway", "single", driveway(60, 52, id)));
-  parts.push(g(state, "driveway", "double", driveway(60, 100, id)));
-  parts.push(g(state, "driveway", "triple", driveway(60, 148, id)));
-  parts.push(g(state, "driveway", "rv", driveway(60, 100, id, true)));
+  // Driveway: before a choice, a dashed outline.
+  p.push(g(state, "driveway", "?", ghost(110, 250, 110, 154) + label(165, 330, "Driveway", { size: 12, weight: 500, bg: "", color: "#5d6878" })));
+  p.push(g(state, "driveway", "single", driveway(110, 60, "1 car wide", id)));
+  p.push(g(state, "driveway", "double", driveway(110, 110, "2 cars wide", id)));
+  p.push(g(state, "driveway", "triple", driveway(110, 160, "3 cars wide", id)));
+  p.push(g(state, "driveway", "rv", driveway(110, 110, "2 cars + RV pad", id, true)));
 
   // Walkways.
-  parts.push(g(state, "walkway", "?", rect(292, 214, 16, 104, HINT)));
-  parts.push(g(state, "walkway", "regular", rect(292, 214, 16, 104, CONCRETE) + ice(292, 214, 16, 104, id) + bank(309, 222, 6, 88)));
-  parts.push(
-    g(
-      state,
-      "walkway",
-      "long",
-      rect(292, 214, 16, 104, CONCRETE) +
-        ice(292, 214, 16, 104, id) +
-        rect(390, 80, 12, 238, CONCRETE) +
-        ice(390, 80, 12, 238, id) +
-        rect(386, 74, 22, 4, "#9aa6b2"),
-    ),
-  );
+  p.push(g(state, "walkway", "?", ghost(322, 262, 16, 120)));
+  p.push(g(state, "walkway", "regular", surface(322, 262, 16, 120, id)));
+  p.push(g(state, "walkway", "long", surface(322, 262, 16, 120, id) + surface(450, 60, 16, 322, id) + label(458, 52, "Back gate", { size: 11 })));
 
-  // House and attached garage. Roofs under snow: south faces catch the low sun, north faces sit in shade.
-  parts.push(`<g stroke="#a9b6c3" stroke-width="1.5" stroke-linejoin="round">
-    <rect x="60" y="112" width="156" height="46" fill="#dde5ee"/>
-    <rect x="60" y="158" width="156" height="46" fill="#fdfeff"/>
-    <polygon points="216,64 388,64 342,128 262,128" fill="#d9e2ec"/>
-    <polygon points="216,64 262,128 262,140 216,204" fill="#e9eff5"/>
-    <polygon points="388,64 342,128 342,140 388,204" fill="#e9eff5"/>
-    <polygon points="216,204 262,140 342,140 388,204" fill="#fdfeff"/>
-    <rect x="262" y="128" width="80" height="12" fill="#f3f6fa"/>
-  </g>`);
-  parts.push(rect(352, 80, 14, 18, "#7c6e63", 2) + rect(350, 78, 18, 6, "#ffffff", 3));
-  parts.push(spruce(150, 44, 22) + spruce(250, 270, 20) + spruce(24, 300, 16));
+  // House and garage footprint.
+  p.push(rect(110, 150, 120, 100, `fill="url(#${id}-hatch)" stroke="${INK}" stroke-width="2"`));
+  p.push(rect(230, 110, 210, 140, `fill="url(#${id}-hatch)" stroke="${INK}" stroke-width="2"`));
+  p.push(label(335, 184, "House"));
+  p.push(label(170, 204, "Garage"));
+  // Front door.
+  p.push(rect(318, 246, 24, 8, `fill="${PAPER}" stroke="${INK}" stroke-width="1.5"`));
 
   // Front steps.
-  parts.push(g(state, "steps", "?", ""));
-  parts.push(
-    g(
-      state,
-      "steps",
-      "true",
-      rect(284, 204, 32, 12, CONCRETE) + `<path d="M284 210h32" stroke="#a9b3bd" stroke-width="1.5"/>` + ice(284, 204, 32, 12, id),
-    ),
-  );
+  p.push(g(state, "steps", "true", surface(312, 254, 36, 10, id) + line(312, 259, 348, 259, `stroke="${INK}" stroke-width="1"`)));
 
-  return `<svg class="lot" viewBox="0 0 480 400" role="img" aria-label="${title}" data-ice="${state.iceMelt ? "1" : "0"}"${crop ? ' preserveAspectRatio="xMidYMax slice"' : ""} xmlns="http://www.w3.org/2000/svg">${parts.join("")}</svg>`;
+  // North arrow.
+  p.push(`<g transform="translate(40 64)"><circle r="16" fill="none" stroke="${INK}" stroke-width="1.2"/><path d="M0 -12 6 8 0 3 -6 8Z" fill="${INK}"/></g>`);
+  p.push(label(40, 98, "N", { size: 12, bg: "" }));
+
+  return `<svg class="lot" viewBox="0 0 640 480" role="img" aria-label="${title}" data-ice="${state.iceMelt ? "1" : "0"}"${crop ? ' preserveAspectRatio="xMidYMax slice"' : ""} font-family="Public Sans, system-ui, sans-serif" xmlns="http://www.w3.org/2000/svg">${p.join("")}</svg>`;
 }

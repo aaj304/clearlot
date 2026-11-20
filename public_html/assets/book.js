@@ -9,7 +9,8 @@
   var back = form.querySelector("[data-back]");
   var next = form.querySelector("[data-next]");
   var lot = form.querySelector(".lot");
-  var ticket = form.querySelector(".ticket");
+  var wo = form.querySelector(".wo");
+  var MONTHS = prices.months;
   var current = 0;
   var backToReview = false; // after "Change" on the review screen, Next returns there
 
@@ -66,34 +67,31 @@
     });
     lot.setAttribute("data-ice", s.iceMelt ? "1" : "0");
 
-    var total = price(s);
-    form.querySelector("[data-total]").textContent = s.driveway ? money(total) : "$0";
-    form.querySelector("[data-total-unit]").textContent =
-      s.plan === "winter" ? "For the winter, plus GST" : "Per visit, plus GST";
-
-    var rows = [
-      ["How often", s.plan ? LABELS["plan:" + s.plan] : ""],
-      ["Driveway", s.driveway ? LABELS["driveway:" + s.driveway] : ""],
-      ["Sidewalk", s.sidewalk ? LABELS["sidewalk:" + s.sidewalk] : ""],
-      ["Walkway", s.walkway ? LABELS["walkway:" + s.walkway] : ""],
-    ];
-    var extras = [];
-    if (s.steps) extras.push("Front steps");
-    if (s.iceMelt) extras.push("Ice melt");
-    if (extras.length) rows.push(["Extras", extras.join(", ")]);
-    form.querySelector("[data-summary]").innerHTML = rows
-      .map(function (r) {
-        return "<div><dt>" + r[0] + "</dt><dd>" + (r[1] || '<span class="muted">Not chosen yet</span>') + "</dd></div>";
-      })
+    // The work order: one line per chosen surface with its price, then the total.
+    var p = prices[s.plan || "once"];
+    var lines = [];
+    if (s.driveway) lines.push([LABELS["driveway:" + s.driveway], p.driveway[s.driveway]]);
+    if (s.sidewalk && s.sidewalk !== "none") lines.push([LABELS["sidewalk:" + s.sidewalk], p.sidewalk[s.sidewalk]]);
+    if (s.walkway && s.walkway !== "none") lines.push([LABELS["walkway:" + s.walkway], p.walkway[s.walkway]]);
+    if (s.steps) lines.push(["Front steps", p.steps]);
+    if (s.iceMelt) lines.push(["Ice melt", p.iceMelt]);
+    wo.querySelector("[data-lines]").innerHTML = lines
+      .map(function (l) { return "<div><dt>" + l[0] + "</dt><dd>" + money(l[1]) + "</dd></div>"; })
       .join("");
+    var total = price(s);
+    wo.querySelector("[data-total-row]").hidden = !s.driveway;
+    wo.querySelector("[data-total]").textContent = money(total);
+    wo.querySelector("[data-total-unit]").textContent = s.plan === "winter" ? "Whole winter, plus GST" : "Per visit, plus GST";
+    wo.querySelector("[data-monthly]").textContent =
+      s.plan === "winter" ? "or " + money(Math.round(total / MONTHS)) + " a month for " + MONTHS + " months" : "";
 
     var now = new Date();
     if (s.plan === "winter") {
-      ticket.querySelector("[data-booked]").textContent = "Today";
-      ticket.querySelector("[data-cleared]").textContent = "24 h after each snowfall";
+      wo.querySelector("[data-booked]").textContent = "Today";
+      wo.querySelector("[data-cleared]").textContent = "24 h after each snowfall";
     } else {
-      ticket.querySelector("[data-booked]").textContent = "Now, " + window.clearlotTime(now);
-      ticket.querySelector("[data-cleared]").textContent = window.clearlotTime(new Date(now.getTime() + 864e5));
+      wo.querySelector("[data-booked]").textContent = window.clearlotTime(now);
+      wo.querySelector("[data-cleared]").textContent = window.clearlotTime(new Date(now.getTime() + 864e5));
     }
 
     var other = form.querySelector("[data-other-fields]");
@@ -121,7 +119,7 @@
       ["Walkway", LABELS["walkway:" + s.walkway], "walkway"],
       ["Extras", extras.length ? extras.join(", ") : "None", "extras"],
       ["Contact", who, "contact"],
-      ["Price", money(price(s)) + (s.plan === "winter" ? " for the winter" : " per visit") + ", plus GST", null],
+      ["Price", money(price(s)) + (s.plan === "winter" ? " for the winter, or " + money(Math.round(price(s) / MONTHS)) + " a month for " + MONTHS + " months" : " per visit") + ", plus GST", null],
     ];
     form.querySelector("[data-review]").innerHTML = rows
       .map(function (r) {
