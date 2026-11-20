@@ -1,6 +1,7 @@
 {
   "gst": 0.05,
   "months": 5,
+  "triggerCm": 5,
   "prices": {
     "once": {
       "driveway": {

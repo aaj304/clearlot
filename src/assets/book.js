@@ -109,7 +109,7 @@
     var extras = [];
     if (s.steps) extras.push("Front steps");
     if (s.iceMelt) extras.push("Ice melt");
-    var who = form.name.value.trim() + ", " + form.phone.value.trim();
+    var who = form.name.value.trim() + ", " + form.phone.value.trim() + ", " + form.email.value.trim();
     if (form.forOther.checked && form.otherName.value.trim()) who += " (for " + form.otherName.value.trim() + ")";
     var rows = [
       ["Address", form.address.value.trim() + ", Regina", "address"],
@@ -156,7 +156,7 @@
       if (form.name.value.trim().length < 2) return setError(step, "Please type your name.", form.name);
       if (form.phone.value.replace(/\D/g, "").length < 10) return setError(step, "Please type your phone number with the area code, like 306 555 0123.", form.phone);
       var em = form.email.value.trim();
-      if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return setError(step, "That email doesn’t look right. You can also leave it empty.", form.email);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return setError(step, em ? "That email doesn’t look right. Please check it." : "Please type your email. We send your booking confirmation there.", form.email);
       if (form.forOther.checked && form.otherName.value.trim().length < 2) return setError(step, "Please type the name of the person you’re booking for.", form.otherName);
     }
     return setError(step, "");
@@ -227,4 +227,96 @@
 
   update();
   show(0, false);
+
+  // ---------- Address suggestions (Google Places, through /api/address.php) ----------
+  var input = form.address;
+  var list = document.getElementById("address-list");
+  var hint = form.querySelector("[data-ac-hint]");
+  var items = [];
+  var active = -1;
+  var enabled = true;
+  var timer = null;
+  var seq = 0;
+  var session = newSession();
+
+  function newSession() {
+    return window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+  }
+  function close() {
+    list.hidden = true;
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+    active = -1;
+  }
+  function render() {
+    if (!items.length) return close();
+    list.innerHTML =
+      items
+        .map(function (it, i) {
+          return '<li role="option" id="ac-' + i + '" aria-selected="' + (i === active) + '" data-i="' + i + '"><strong>' + esc(it.main) + "</strong><span>" + esc(it.secondary) + "</span></li>";
+        })
+        .join("") + '<li class="ac-credit" aria-hidden="true">Address suggestions by Google</li>';
+    list.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+    if (active >= 0) input.setAttribute("aria-activedescendant", "ac-" + active);
+    else input.removeAttribute("aria-activedescendant");
+  }
+  function choose(i) {
+    var it = items[i];
+    if (!it) return;
+    input.value = it.main;
+    form.placeId.value = it.id;
+    close();
+    items = [];
+    hint.hidden = true;
+    fetch("/api/address.php?place=" + encodeURIComponent(it.id) + "&session=" + session)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.address) input.value = d.address;
+        if (d.postal && !form.postal.value) form.postal.value = d.postal;
+        if (d.inRegina === false) setError(steps[0], "That address looks like it’s outside Regina. We only clear homes inside the city for now.", input);
+      })
+      .catch(function () {})
+      .then(function () { session = newSession(); });
+  }
+
+  input.setAttribute("role", "combobox");
+  input.setAttribute("aria-autocomplete", "list");
+  input.setAttribute("aria-controls", "address-list");
+  input.setAttribute("aria-expanded", "false");
+
+  input.addEventListener("input", function () {
+    form.placeId.value = "";
+    if (!enabled) return;
+    clearTimeout(timer);
+    var q = input.value.trim();
+    if (q.length < 3) { items = []; return close(); }
+    timer = setTimeout(function () {
+      var mine = ++seq;
+      fetch("/api/address.php?q=" + encodeURIComponent(q) + "&session=" + session)
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (mine !== seq) return;
+          if (d.enabled === false) { enabled = false; return close(); }
+          items = d.suggestions || [];
+          active = -1;
+          hint.hidden = !items.length;
+          render();
+        })
+        .catch(function () {});
+    }, 250);
+  });
+  input.addEventListener("keydown", function (e) {
+    if (list.hidden || !items.length) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); active = (active + 1) % items.length; render(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); active = (active - 1 + items.length) % items.length; render(); }
+    else if (e.key === "Enter" && active >= 0) { e.preventDefault(); choose(active); }
+    else if (e.key === "Escape") { close(); }
+  });
+  list.addEventListener("pointerdown", function (e) { e.preventDefault(); });
+  list.addEventListener("click", function (e) {
+    var li = e.target.closest("[data-i]");
+    if (li) choose(Number(li.dataset.i));
+  });
+  input.addEventListener("blur", function () { setTimeout(close, 150); });
 })();

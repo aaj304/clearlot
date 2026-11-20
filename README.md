@@ -22,18 +22,52 @@ The folder **`public_html/`** is the finished website. That is what you upload.
 
 ## Before launch: fill in your details
 
-1. **`site.config.json`**
-   - `phone`: shown on every page, e.g. `"(306) 555-0123"`. The call buttons stay hidden until this is set.
+The repository is public, so settings are split in two files.
+
+1. **`site.config.json`** (public, committed): things shown on the site.
+   - `phone`: shown on every page, e.g. `"(306) 555-0123"`. Call buttons stay hidden until it's set.
    - `publicEmail`: shown on the contact page.
-   - `bookingEmail`: where bookings are sent. Never shown on the site.
-   - `fromEmail`: an email address on your own domain (create it in Hostinger → Emails). Booking emails are sent from it.
    - `siteUrl`: your real domain, e.g. `"https://clearlotyqr.ca"`.
    - `googleAdsId`, `bookingConversionLabel`, `callConversionLabel`: from Google Ads, see below.
-2. **`prices.json`**: set the one-time prices here. Whole-winter prices are worked out from them: one-time price × `visitsPerMonth` (3) × `months` (5), so 15 visits.
-3. Rebuild: `node build.mjs`. This regenerates `public_html/`.
+2. **`site.private.json`** (private, never committed; listed in `.gitignore`):
+   - `bookingEmail`: where every booking is sent.
+   - `googleMapsApiKey`: turns on Regina address suggestions in the booking form (see below).
+   - `fromEmail`: the address emails come from. Leave empty to use `bookings@` your website's domain.
+   - `smtpHost`, `smtpPort`, `smtpUser`, `smtpPass`, `smtpSecure`: optional, for reliable email (see below).
+3. **`prices.json`**: set the one-time prices here. Whole-winter prices are worked out from them: one-time price × `visitsPerMonth` (3) × `months` (5), so 15 visits.
+4. Rebuild: `node build.mjs`. This regenerates `public_html/`.
 
-No Node.js? Send the details to Claude to rebuild, or edit `public_html/api/config.php` on
-Hostinger directly for the booking emails (the phone number on the pages needs a rebuild).
+The private values go only into `public_html/api/config.php`, which the server runs but never shows,
+and which is also kept out of git. The first booking or address lookup copies them to
+`clearlot-bookings/settings.json` above `public_html`, so a later upload without them keeps working.
+
+## Emails
+
+Every booking sends two emails:
+
+- **To you** (`bookingEmail`): the work order, address with a map link, customer details and notes.
+  Reply goes straight to the customer.
+- **To the customer**: their work order with prices and GST, the "cleared by" time, and what happens next.
+  The email field in the booking form is required for this.
+
+By default the server's built-in mail sends them. That works without setup but can land in spam,
+especially from a temporary `hostingersite.com` address. For reliable delivery, create a mailbox on your
+own domain (hPanel → Emails), then add to `site.private.json`:
+
+```json
+"smtpHost": "smtp.hostinger.com", "smtpPort": "465", "smtpSecure": "ssl",
+"smtpUser": "bookings@yourdomain.ca", "smtpPass": "the mailbox password"
+```
+
+## Address suggestions (Google)
+
+1. In Google Cloud Console, create a project with billing turned on.
+2. Enable **Places API (New)**.
+3. Create an API key. Under API restrictions, allow only Places API (New).
+4. Put it in `site.private.json` as `googleMapsApiKey`, rebuild and upload.
+
+The key stays on the server: the browser asks `/api/address.php`, which asks Google and only returns
+addresses inside Regina. Without a key the address box works as a normal text field.
 
 ## Upload to Hostinger
 

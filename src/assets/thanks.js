@@ -3,6 +3,7 @@
   var ref = (q.get("ref") || "").replace(/[^A-Z0-9-]/gi, "").slice(0, 16);
   var plan = q.get("plan") === "winter" ? "winter" : "once";
   var t = Number(q.get("t")) * 1000;
+  if (q.get("mail") === "1") document.querySelector("[data-mail-line]").hidden = false;
   var when = t > 0 && Math.abs(Date.now() - t) < 7 * 864e5 ? new Date(t) : new Date();
 
   var ticket = document.querySelector(".wo");

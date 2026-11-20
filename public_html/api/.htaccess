@@ -2,3 +2,6 @@ Options -Indexes
 <FilesMatch "\.(json|txt|jsonl)$">
   Require all denied
 </FilesMatch>
+<Files "lib.php">
+  Require all denied
+</Files>

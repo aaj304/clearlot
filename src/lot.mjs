@@ -8,8 +8,8 @@
  * book.js applies the same rule in the browser.
  */
 
-const INK = "#17253a";
-const INK_SOFT = "#8a93a3";
+const INK = "#0d192b";
+const INK_SOFT = "#69748a";
 const ORANGE = "#ef6a22";
 const PAPER = "#fbfaf6";
 
@@ -75,7 +75,7 @@ export function renderLot(state = {}, id = "lot", { title = "Site plan of a Regi
   p.push(rect(0, 404, 640, 76, `fill="#eceae3"`));
   p.push(line(0, 404, 640, 404, `stroke="${INK}" stroke-width="1.5"`));
   p.push(line(0, 446, 640, 446, `stroke="${INK_SOFT}" stroke-width="1.5" stroke-dasharray="18 12"`));
-  p.push(label(24, 470, "Street", { anchor: "start", size: 12, weight: 500, bg: "", color: "#5d6878" }));
+  p.push(label(24, 470, "Street", { anchor: "start", size: 12, weight: 500, bg: "", color: "#434d63" }));
 
   // Neighbouring lots: property lines and hatched footprints.
   p.push(line(80, 24, 80, 380, `stroke="${INK_SOFT}" stroke-width="1" stroke-dasharray="2 5"`));
@@ -119,7 +119,7 @@ export function renderLot(state = {}, id = "lot", { title = "Site plan of a Regi
   p.push(rect(80, 24, 456, 352, `fill="none" stroke="${INK}" stroke-width="1.2" stroke-dasharray="10 4 2 4"`));
 
   // Driveway: before a choice, a dashed outline.
-  p.push(g(state, "driveway", "?", ghost(110, 250, 110, 154) + label(165, 330, "Driveway", { size: 12, weight: 500, bg: "", color: "#5d6878" })));
+  p.push(g(state, "driveway", "?", ghost(110, 250, 110, 154) + label(165, 330, "Driveway", { size: 12, weight: 500, bg: "", color: "#434d63" })));
   p.push(g(state, "driveway", "single", driveway(110, 60, "1 car wide", id)));
   p.push(g(state, "driveway", "double", driveway(110, 110, "2 cars wide", id)));
   p.push(g(state, "driveway", "triple", driveway(110, 160, "3 cars wide", id)));

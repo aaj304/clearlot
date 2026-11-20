@@ -37,7 +37,7 @@ export function workOrder({ ref = "Example", lines = [], total = "", unit = "", 
 
 /** Small plan-style diagrams for the option cards: ink outlines, the chosen surface in orange. */
 const O = "#ef6a22";
-const I = "#17253a";
+const I = "#0d192b";
 const house = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="${I}" stroke-width="1.5"/>`;
 const fill = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${O}" stroke="${I}" stroke-width="1.2"/>`;
 const car = (x, y) => `<rect x="${x}" y="${y}" width="10" height="17" rx="3" fill="#fbfaf6" stroke="${I}" stroke-width="1.2"/>`;
@@ -55,7 +55,7 @@ export const DIAGRAM = {
   double: svg(fill(16, 6, 32, 38) + car(19, 16) + car(35, 16)),
   triple: svg(fill(6, 6, 52, 38) + car(9, 16) + car(27, 16) + car(45, 16)),
   rv: svg(fill(4, 6, 14, 38) + fill(20, 6, 34, 38) + `<rect x="6" y="9" width="10" height="28" rx="2" fill="#fbfaf6" stroke="${I}" stroke-width="1.2"/>` + car(23, 16) + car(40, 16)),
-  sidewalkNone: svg(house(16, 6, 32, 24) + `<line x1="4" y1="40" x2="60" y2="40" stroke="#8a93a3" stroke-dasharray="3 3"/>`),
+  sidewalkNone: svg(house(16, 6, 32, 24) + `<line x1="4" y1="40" x2="60" y2="40" stroke="#69748a" stroke-dasharray="3 3"/>`),
   sidewalkRegular: svg(house(16, 6, 32, 24) + fill(4, 36, 56, 7)),
   sidewalkCorner: svg(house(10, 6, 32, 24) + fill(2, 36, 54, 7) + fill(53, 2, 7, 41)),
   walkwayNone: svg(house(14, 4, 36, 24)),

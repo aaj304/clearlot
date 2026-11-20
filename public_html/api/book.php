@@ -1,12 +1,13 @@
 <?php
 /**
- * Receives a booking from /book/, re-checks every choice and recomputes the price,
- * saves it, emails it to you (and a confirmation to the customer), then sends the
- * customer to the thank-you page. Prices always come from catalog.json, never the browser.
+ * Receives a booking from /book/, re-checks every choice and recomputes the price, saves it,
+ * emails the booking to you and a confirmation to the customer, then sends the customer to the
+ * thank-you page. Prices always come from catalog.json, never from the browser.
  */
 declare(strict_types=1);
+require __DIR__ . '/lib.php';
 
-$cfg = require __DIR__ . '/config.php';
+$cfg = clearlot_settings();
 $catalog = json_decode((string) file_get_contents(__DIR__ . '/catalog.json'), true);
 
 function page(int $status, string $title, string $message): void
@@ -34,7 +35,7 @@ function field(string $key, int $max = 200): string
     return trim(mb_substr($v, 0, $max));
 }
 
-// Bots: a filled honeypot or a form sent faster than a person could type it.
+// Bots: a filled honeypot or a form sent faster than a person could fill it in.
 $started = (int) ($_POST['started'] ?? 0);
 if (field('website') !== '' || ($started > 0 && (microtime(true) * 1000 - $started) < 4000)) {
     header('Location: /thank-you/', true, 303);
@@ -49,6 +50,7 @@ $steps = field('steps', 1) === '1';
 $ice = field('iceMelt', 1) === '1';
 $address = field('address', 160);
 $postal = strtoupper(field('postal', 7));
+$verified = field('placeId', 300) !== '';
 $name = field('name', 80);
 $phone = field('phone', 30);
 $email = field('email', 120);
@@ -59,6 +61,7 @@ $notes = field('notes', 600);
 
 $P = $catalog['prices'];
 $L = $catalog['labels'];
+$months = (int) $catalog['months'];
 
 if (!isset($P[$plan]) || !isset($P[$plan]['driveway'][$driveway]) || !isset($P[$plan]['sidewalk'][$sidewalk]) || !isset($P[$plan]['walkway'][$walkway])) {
     page(400, 'Some choices are missing', 'Please go back and pick your plan, driveway, sidewalk and walkway.');
@@ -72,40 +75,90 @@ if (mb_strlen($name) < 2) {
 if (strlen(preg_replace('/\D/', '', $phone) ?? '') < 10) {
     page(400, 'Please check your phone number', 'Type your phone number with the area code, like 306 555 0123.');
 }
-if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    page(400, 'Please check your email', 'That email address doesn’t look right. You can also leave it empty.');
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    page(400, 'Please check your email', 'We send your booking confirmation by email. Please type a valid email address.');
 }
-
-// A light limit so one visitor can't flood your inbox.
-$dataDir = dirname(__DIR__, 2) . '/clearlot-bookings';
-if (!is_dir($dataDir) && !@mkdir($dataDir, 0750, true)) {
-    $dataDir = __DIR__ . '/data';
-    if (!is_dir($dataDir)) @mkdir($dataDir, 0750, true);
-    if (!file_exists($dataDir . '/.htaccess')) @file_put_contents($dataDir . '/.htaccess', "Require all denied\nDeny from all\n");
-}
-$ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-$rateFile = $dataDir . '/rate-' . substr(hash('sha256', $ip), 0, 16) . '.txt';
-$recent = array_filter(
-    array_map('intval', @file($rateFile, FILE_IGNORE_NEW_LINES) ?: []),
-    fn ($t) => $t > time() - 3600
-);
-if (count($recent) >= 6) {
+if (!clearlot_rate_ok('book', 6, 3600)) {
     page(429, 'Too many bookings at once', 'Please wait a little and try again.');
 }
-$recent[] = time();
-@file_put_contents($rateFile, implode("\n", $recent));
 
 $p = $P[$plan];
-$total = $p['driveway'][$driveway] + $p['sidewalk'][$sidewalk] + $p['walkway'][$walkway]
-    + ($steps ? $p['steps'] : 0) + ($ice ? $p['iceMelt'] : 0);
+$money = fn ($n) => '$' . number_format((float) $n, 2);
+$lines = [[$L['driveway'][$driveway], $p['driveway'][$driveway]]];
+if ($sidewalk !== 'none') $lines[] = [$L['sidewalk'][$sidewalk], $p['sidewalk'][$sidewalk]];
+if ($walkway !== 'none') $lines[] = [$L['walkway'][$walkway], $p['walkway'][$walkway]];
+if ($steps) $lines[] = ['Front steps', $p['steps']];
+if ($ice) $lines[] = ['Ice melt', $p['iceMelt']];
+$total = array_sum(array_column($lines, 1));
 $gst = round($total * $catalog['gst'], 2);
+$unit = $plan === 'winter' ? 'for the winter' : 'per visit';
+$monthly = $plan === 'winter' ? round(($total + $gst) / $months, 2) : 0;
+
 $ref = 'CL-' . strtoupper(bin2hex(random_bytes(3)));
 $now = new DateTimeImmutable('now', new DateTimeZone('America/Regina'));
 $due = $plan === 'once' ? $now->modify('+24 hours')->format('D M j, g:i a') : 'within 24 hours after each snowfall';
+$fullAddress = $address . ', Regina, SK' . ($postal !== '' ? " $postal" : '');
 
-$extras = array_filter([$steps ? 'Front steps' : null, $ice ? 'Ice melt' : null]);
-$unit = $plan === 'winter' ? 'for the winter' : 'per visit';
-$money = fn ($n) => '$' . number_format((float) $n, 2);
+$workOrder = [];
+foreach ($lines as [$label, $amount]) $workOrder[] = '  ' . str_pad($label, 28) . $money($amount);
+$workOrder[] = '  ' . str_repeat('-', 38);
+$workOrder[] = '  ' . str_pad('Subtotal ' . $unit, 28) . $money($total);
+$workOrder[] = '  ' . str_pad('GST (5%)', 28) . $money($gst);
+$workOrder[] = '  ' . str_pad('Total', 28) . $money($total + $gst);
+if ($plan === 'winter') $workOrder[] = '  or ' . $months . ' monthly payments of ' . $money($monthly) . ', November to March';
+
+// ---------- Your copy ----------
+$owner = array_merge([
+    "New booking $ref",
+    '',
+    "CLEAR BY: $due",
+    '',
+    'Address:   ' . $fullAddress . ($verified ? '  (picked from Google suggestions)' : ''),
+    'Map:       https://www.google.com/maps/search/?api=1&query=' . rawurlencode($fullAddress),
+    'Plan:      ' . $L['plan'][$plan],
+    '',
+    'WORK ORDER',
+], $workOrder, [
+    '',
+    'Customer:  ' . $name,
+    'Phone:     ' . $phone,
+    'Email:     ' . $email,
+]);
+if ($forOther) $owner[] = 'Booked for: ' . $otherName . ($otherPhone !== '' ? ", $otherPhone" : '');
+if ($notes !== '') {
+    $owner[] = '';
+    $owner[] = 'Notes: ' . $notes;
+}
+
+// ---------- The customer's confirmation ----------
+$first = explode(' ', $name)[0];
+$customer = array_merge([
+    "Hi $first,",
+    '',
+    'Thank you for booking snow removal with ' . $cfg['siteName'] . '. Here is your work order.',
+    '',
+    "  Booking number: $ref",
+    "  Address: $fullAddress",
+    '  Plan: ' . $L['plan'][$plan],
+    $plan === 'once' ? "  Cleared by: $due" : '  We clear within 24 hours after every snowfall of ' . ($catalog['triggerCm'] ?? 5) . ' cm or more',
+    '',
+], $workOrder, [
+    '',
+    'What happens next',
+    '  1. We call you at ' . $phone . ' to confirm the details.',
+    '  2. We clear your snow ' . ($plan === 'once' ? 'within 24 hours of your booking.' : 'after every snowfall, within 24 hours after it stops.'),
+    '  3. You pay after we confirm. Nothing has been charged.',
+    '',
+    'Need to change something? ' . ($cfg['phone'] !== '' ? 'Call us at ' . $cfg['phone'] . ' or reply to this email.' : 'Reply to this email.'),
+    '',
+    $cfg['siteName'] . ', snow removal in Regina',
+]);
+if ($forOther) array_splice($customer, 7, 0, ['  Booked for: ' . $otherName]);
+
+$ownerMailed = $cfg['bookingEmail'] !== ''
+    ? clearlot_send($cfg, $cfg['bookingEmail'], "New booking $ref: " . $L['driveway'][$driveway] . ', ' . $L['plan'][$plan] . " at $address", implode("\n", $owner), $email)
+    : false;
+$customerMailed = clearlot_send($cfg, $email, "Your snow removal booking $ref", implode("\n", $customer), $cfg['bookingEmail']);
 
 $booking = [
     'ref' => $ref,
@@ -121,77 +174,20 @@ $booking = [
     'gst' => $gst,
     'address' => $address,
     'postal' => $postal,
+    'addressFromGoogle' => $verified,
     'name' => $name,
     'phone' => $phone,
     'email' => $email,
     'otherName' => $otherName,
     'otherPhone' => $otherPhone,
     'notes' => $notes,
+    'emailedYou' => $ownerMailed,
+    'emailedCustomer' => $customerMailed,
 ];
+$saved = (bool) @file_put_contents(clearlot_data_dir() . '/bookings.jsonl', json_encode($booking, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
 
-$saved = (bool) @file_put_contents($dataDir . '/bookings.jsonl', json_encode($booking, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
-
-$lines = [
-    "New booking $ref",
-    '',
-    "CLEAR BY: $due",
-    '',
-    'Address:   ' . $address . ', Regina' . ($postal !== '' ? " $postal" : ''),
-    'Map:       https://www.google.com/maps/search/?api=1&query=' . rawurlencode("$address, Regina, SK"),
-    '',
-    'Plan:      ' . $L['plan'][$plan],
-    'Driveway:  ' . $L['driveway'][$driveway],
-    'Sidewalk:  ' . $L['sidewalk'][$sidewalk],
-    'Walkway:   ' . $L['walkway'][$walkway],
-    'Extras:    ' . ($extras ? implode(', ', $extras) : 'None'),
-    'Price:     ' . $money($total) . " $unit + " . $money($gst) . ' GST = ' . $money($total + $gst),
-    'Payment:   ' . ($plan === 'winter' ? 'in full, or ' . $catalog['months'] . ' monthly payments of ' . $money(($total + $gst) / $catalog['months']) . ' incl. GST (ask when you call)' : 'per visit'),
-    '',
-    'Customer:  ' . $name,
-    'Phone:     ' . $phone,
-    'Email:     ' . ($email !== '' ? $email : '(none)'),
-];
-if ($forOther) {
-    $lines[] = 'Booked for: ' . $otherName . ($otherPhone !== '' ? ", $otherPhone" : '');
-}
-if ($notes !== '') {
-    $lines[] = '';
-    $lines[] = 'Notes: ' . $notes;
-}
-$body = implode("\n", $lines);
-
-$mailed = false;
-$headerSafe = fn ($s) => str_replace(["\r", "\n"], '', $s);
-if ($cfg['bookingEmail'] !== '') {
-    $from = $cfg['fromEmail'] !== '' ? $cfg['fromEmail'] : $cfg['bookingEmail'];
-    $headers = ['From: ' . $headerSafe($cfg['siteName']) . ' <' . $headerSafe($from) . '>', 'Content-Type: text/plain; charset=UTF-8'];
-    if ($email !== '') $headers[] = 'Reply-To: ' . $headerSafe($email);
-    $subject = $headerSafe("New booking $ref: " . $L['driveway'][$driveway] . ', ' . $L['plan'][$plan] . " at $address");
-    $mailed = @mail($cfg['bookingEmail'], '=?UTF-8?B?' . base64_encode($subject) . '?=', $body, implode("\r\n", $headers));
-
-    if ($email !== '') {
-        $c = [
-            "Hi $name,",
-            '',
-            'Thanks for booking snow removal with ' . $cfg['siteName'] . '. Here is what we have:',
-            '',
-            "  Booking number: $ref",
-            "  Address: $address, Regina",
-            '  ' . $L['plan'][$plan] . ': ' . $L['driveway'][$driveway] . ', ' . $L['sidewalk'][$sidewalk] . ', ' . $L['walkway'][$walkway] . ($extras ? ', ' . implode(', ', $extras) : ''),
-            '  Price: ' . $money($total) . " $unit, plus GST" . ($plan === 'winter' ? ', or ' . $catalog['months'] . ' monthly payments of ' . $money($total / $catalog['months']) . ' plus GST' : ''),
-            $plan === 'once' ? "  Cleared by: $due" : '  We clear within 24 hours after each snowfall',
-            '',
-            'We will call you to confirm before we come. Nothing has been charged.',
-            '',
-            $cfg['siteName'] . ($cfg['phone'] !== '' ? ' · ' . $cfg['phone'] : ''),
-        ];
-        $ch = ['From: ' . $headerSafe($cfg['siteName']) . ' <' . $headerSafe($from) . '>', 'Reply-To: ' . $headerSafe($cfg['bookingEmail']), 'Content-Type: text/plain; charset=UTF-8'];
-        @mail($email, '=?UTF-8?B?' . base64_encode("Your snow removal booking ($ref)") . '?=', implode("\n", $c), implode("\r\n", $ch));
-    }
-}
-
-if (!$saved && !$mailed) {
+if (!$saved && !$ownerMailed) {
     page(500, 'We couldn’t send your booking', 'Something went wrong on our side. Please try again in a minute.');
 }
 
-header('Location: /thank-you/?ref=' . $ref . '&plan=' . $plan . '&t=' . time(), true, 303);
+header('Location: /thank-you/?ref=' . $ref . '&plan=' . $plan . '&t=' . time() . ($customerMailed ? '&mail=1' : ''), true, 303);

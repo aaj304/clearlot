@@ -280,7 +280,8 @@ ${ctaBand()}`,
             "address",
             "What’s the address?",
             "Where should we clear the snow?",
-            `<div class="field"><label for="address">Street address</label><input class="input" id="address" name="address" autocomplete="street-address" placeholder="For example, 2405 Albert St" required maxlength="160"></div>
+            `<div class="field"><label for="address">Street address</label><div class="ac"><input class="input" id="address" name="address" autocomplete="street-address" placeholder="Start typing, for example 2405 Albert St" required maxlength="160"><ul class="ac-list" id="address-list" role="listbox" aria-label="Suggested addresses" hidden></ul></div><p class="hint" data-ac-hint hidden>Pick your address from the list, or keep typing</p></div>
+             <input type="hidden" name="placeId" value="">
              <div class="field"><label for="postal">Postal code <span class="hint">(optional)</span></label><input class="input" id="postal" name="postal" autocomplete="postal-code" maxlength="7" style="max-width:220px"></div>
              <p class="city-fixed">${ICON.pin} Regina, Saskatchewan</p>`,
           )}
@@ -307,10 +308,10 @@ ${ctaBand()}`,
           ${step(
             "contact",
             "How can we reach you?",
-            "We call to confirm your booking before we come.",
+            "We email you a confirmation and call to confirm before we come.",
             `<div class="field"><label for="name">Your name</label><input class="input" id="name" name="name" autocomplete="name" required maxlength="80"></div>
              <div class="field"><label for="phone">Phone number</label><input class="input" id="phone" name="phone" type="tel" autocomplete="tel" required maxlength="30" placeholder="306 555 0123"></div>
-             <div class="field"><label for="email">Email <span class="hint">(optional, for a written confirmation)</span></label><input class="input" id="email" name="email" type="email" autocomplete="email" maxlength="120"></div>
+             <div class="field"><label for="email">Email <span class="hint">(we send your booking confirmation here)</span></label><input class="input" id="email" name="email" type="email" autocomplete="email" required maxlength="120"></div>
              <label class="check"><input type="checkbox" name="forOther" value="1" data-for-other><span>I’m booking for someone else<span>A parent, relative or neighbour</span></span></label>
              <div data-other-fields>
                <div class="field"><label for="otherName">Their name</label><input class="input" id="otherName" name="otherName" maxlength="80"></div>
@@ -360,6 +361,7 @@ ${ctaBand()}`,
       <p class="eyebrow">Booking received</p>
       <h1>Thank you. We have your booking.</h1>
       <p class="lede">We’ll call you to confirm the details before we come. Nothing has been charged.</p>
+      <p class="text-2" data-mail-line hidden>A confirmation email is on its way. If you don’t see it in a few minutes, check your junk or spam folder.</p>
       <p class="text-2" data-ref-line hidden>Your booking number is <strong data-ref></strong>.</p>
       <ol class="steps vertical" style="margin-top:40px">
         <li><div><h3>We call you</h3><p class="text-2">To confirm your address, your sizes and the price.</p></div></li>
