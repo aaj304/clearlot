@@ -1,22 +1,17 @@
 {
-  "_read_me": "STARTING ESTIMATES. Confirm with your crews before launch. Dollars before GST. Run `node build.mjs` after editing.",
+  "_read_me": "One-time prices are set here. Whole-winter prices are worked out by build.mjs: one-time price x visitsPerMonth x months. Dollars before GST. Run `node build.mjs` after editing.",
   "gst": 0.05,
   "season": {
     "label": "November 1 to March 31",
-    "triggerCm": 5
+    "triggerCm": 5,
+    "months": 5,
+    "visitsPerMonth": 3
   },
   "once": {
-    "driveway": { "single": 40, "double": 50, "triple": 65, "rv": 80 },
-    "sidewalk": { "none": 0, "regular": 10, "corner": 20 },
-    "walkway": { "none": 0, "regular": 5, "long": 10 },
+    "driveway": { "single": 50, "double": 60, "triple": 75, "rv": 90 },
+    "sidewalk": { "none": 0, "regular": 15, "corner": 25 },
+    "walkway": { "none": 0, "regular": 10, "long": 15 },
     "steps": 5,
     "iceMelt": 10
-  },
-  "winter": {
-    "driveway": { "single": 475, "double": 600, "triple": 775, "rv": 925 },
-    "sidewalk": { "none": 0, "regular": 125, "corner": 250 },
-    "walkway": { "none": 0, "regular": 75, "long": 125 },
-    "steps": 60,
-    "iceMelt": 150
   }
 }

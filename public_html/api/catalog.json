@@ -3,42 +3,42 @@
   "prices": {
     "once": {
       "driveway": {
-        "single": 40,
-        "double": 50,
-        "triple": 65,
-        "rv": 80
+        "single": 50,
+        "double": 60,
+        "triple": 75,
+        "rv": 90
       },
       "sidewalk": {
         "none": 0,
-        "regular": 10,
-        "corner": 20
+        "regular": 15,
+        "corner": 25
       },
       "walkway": {
         "none": 0,
-        "regular": 5,
-        "long": 10
+        "regular": 10,
+        "long": 15
       },
       "steps": 5,
       "iceMelt": 10
     },
     "winter": {
       "driveway": {
-        "single": 475,
-        "double": 600,
-        "triple": 775,
-        "rv": 925
+        "single": 750,
+        "double": 900,
+        "triple": 1125,
+        "rv": 1350
       },
       "sidewalk": {
         "none": 0,
-        "regular": 125,
-        "corner": 250
+        "regular": 225,
+        "corner": 375
       },
       "walkway": {
         "none": 0,
-        "regular": 75,
-        "long": 125
+        "regular": 150,
+        "long": 225
       },
-      "steps": 60,
+      "steps": 75,
       "iceMelt": 150
     }
   },

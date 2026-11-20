@@ -17,6 +17,11 @@ const version = createHash("sha1")
   .slice(0, 8);
 prices.__version = version;
 
+// Whole winter = the one-time price for the same visits: visitsPerMonth x months.
+const visits = prices.season.visitsPerMonth * prices.season.months;
+const times = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === "object" ? times(v) : v * visits]));
+prices.winter = times(prices.once);
+
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 cpSync("src/assets", join(OUT, "assets"), { recursive: true });
@@ -93,4 +98,4 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 const missing = ["phone", "bookingEmail", "fromEmail"].filter((k) => !site[k]);
 console.log(`Built ${pages.length} pages into ${OUT}/`);
 if (missing.length) console.warn(`WARNING: site.config.json is missing ${missing.join(", ")}. Fill these in before launch.`);
-if (prices._read_me) console.warn("WARNING: prices.json still holds the starting estimates. Confirm them before launch.");
+console.log(`Whole winter priced as ${visits} visits (${prices.season.visitsPerMonth} a month for ${prices.season.months} months).`);

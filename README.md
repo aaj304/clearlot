@@ -29,7 +29,7 @@ The folder **`public_html/`** is the finished website. That is what you upload.
    - `fromEmail`: an email address on your own domain (create it in Hostinger → Emails). Booking emails are sent from it.
    - `siteUrl`: your real domain, e.g. `"https://clearlotyqr.ca"`.
    - `googleAdsId`, `bookingConversionLabel`, `callConversionLabel`: from Google Ads, see below.
-2. **`prices.json`**: the prices are **starting estimates**. Change them to your real prices, then delete the `_read_me` line.
+2. **`prices.json`**: set the one-time prices here. Whole-winter prices are worked out from them: one-time price × `visitsPerMonth` (3) × `months` (5), so 15 visits.
 3. Rebuild: `node build.mjs`. This regenerates `public_html/`.
 
 No Node.js? Send the details to Claude to rebuild, or edit `public_html/api/config.php` on
@@ -60,7 +60,7 @@ Then add the site to **Google Search Console** and submit `https://yourdomain/si
 
 | To change | Edit |
 |---|---|
-| Prices, season dates, snowfall trigger | `prices.json` |
+| Prices, season dates, snowfall trigger, visits per month for the winter price | `prices.json` |
 | Phone, emails, domain, Google Ads | `site.config.json` |
 | Option names and descriptions | `src/catalog.mjs` |
 | Page text | `src/pages.mjs` |
