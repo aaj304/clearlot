@@ -188,7 +188,7 @@ export function buildPages(site, prices) {
   </div>
 </section>
 
-<section class="section section-rule">
+<section class="section">
   <div class="wrap split">
     <div class="section-head side">
       <h2>Your price depends on your driveway</h2>
@@ -379,12 +379,12 @@ ${ctaBand()}`,
     title: "Driveway Snow Removal in Regina | Single, Double, Triple | ClearLot YQR",
     description: `Driveway snow removal in Regina from ${money(P.once.driveway.single)} per visit. Single, double, triple and RV pads, cleared within 24 hours. One-time or whole winter.`,
     schema: [service("Driveway snow removal", "Driveway snow clearing for Regina homes, cleared within 24 hours of booking.", "/driveway-snow-removal/")],
-    body: `<section class="page-head wrap">
+    body: `<section class="page-head"><div class="wrap">
   <p class="eyebrow">Driveways</p>
   <h1>Driveway snow removal in Regina</h1>
   <p class="lede">We clear your driveway from the garage to the street, edge to edge, within 24 hours of your booking. Pick your size and see the price before you book.</p>
   <div class="hero-actions"><a class="btn btn-primary" href="/book/">Book driveway clearing</a>${callBtn()}</div>
-</section>
+</div></section>
 <section class="section section-rule">
   <div class="wrap split">
     <div class="section-head">
@@ -426,12 +426,12 @@ ${ctaBand("Book your driveway clearing")}`,
     title: "Sidewalk Snow Removal in Regina | Regular and Corner Lots | ClearLot YQR",
     description: "City sidewalk snow removal for Regina homes, including corner lots. Add it to your driveway clearing and get it done within 24 hours.",
     schema: [service("Sidewalk snow removal", "Clearing the city sidewalk beside Regina homes, including corner lots, within 24 hours of booking.", "/sidewalk-snow-removal/")],
-    body: `<section class="page-head wrap">
+    body: `<section class="page-head"><div class="wrap">
   <p class="eyebrow">Sidewalks</p>
   <h1>Sidewalk snow removal in Regina</h1>
   <p class="lede">A cleared sidewalk means your neighbours, mail carrier and delivery drivers can walk past your home safely. Add it to your driveway booking and we clear both within 24 hours.</p>
   <div class="hero-actions"><a class="btn btn-primary" href="/book/">Book snow removal</a>${callBtn()}</div>
-</section>
+</div></section>
 <section class="section section-rule">
   <div class="wrap split">
     <div class="section-head">
@@ -468,12 +468,12 @@ ${ctaBand()}`,
     title: "Snow Removal for Seniors in Regina | Easy Booking | ClearLot YQR",
     description: "Snow removal for seniors in Regina. Book by phone or online, or let a family member book for you. Driveway, sidewalk and walkway cleared within 24 hours.",
     schema: [service("Snow removal for seniors", "Simple snow removal booking for seniors in Regina, with the option for family to book on their behalf.", "/snow-removal-for-seniors/")],
-    body: `<section class="page-head wrap">
+    body: `<section class="page-head"><div class="wrap">
   <p class="eyebrow">For seniors and their families</p>
   <h1>Snow removal for seniors in Regina</h1>
   <p class="lede">Stay inside where it’s warm. We clear your driveway, sidewalk and front walkway within 24 hours of your booking.</p>
   <div class="hero-actions">${phone ? callBtn("btn-primary") + `<a class="btn btn-quiet" href="/book/">Book online</a>` : `<a class="btn btn-primary" href="/book/">Book online</a>`}</div>
-</section>
+</div></section>
 ${
   phone
     ? `<section class="section-tight"><div class="wrap"><div class="call-panel"><div><p class="text-2">Prefer to talk to a person?</p><a class="call-number" href="${tel(phone)}" data-call>${phone}</a></div><p class="text-2" style="max-width:26rem">Call and we’ll take your booking over the phone. No computer needed.</p></div></div></section>`
@@ -517,10 +517,10 @@ ${ctaBand("We’ll take care of the snow")}`,
     path: "/prices/",
     title: "Snow Removal Prices in Regina | ClearLot YQR",
     description: `Snow removal prices in Regina. Driveways from ${money(P.once.driveway.single)} per visit or ${money(P.winter.driveway.single)} for the winter. Sidewalk, walkway and extras listed. Plus GST.`,
-    body: `<section class="page-head wrap">
+    body: `<section class="page-head"><div class="wrap">
   <h1>Snow removal prices</h1>
   <p class="lede">Pick your driveway size, then add your sidewalk, walkway and any extras. Prices are in Canadian dollars, plus 5% GST.</p>
-</section>
+</div></section>
 <section class="section-tight" style="padding-top:0">
   <div class="wrap split">
     <div class="stack">
@@ -546,10 +546,10 @@ ${ctaBand("See your exact price in two minutes")}`,
     title: "Snow Removal Across Regina Neighbourhoods | ClearLot YQR",
     description: "Snow removal for homes across Regina, from Harbour Landing to Walsh Acres, Lakeview to Windsor Park. Cleared within 24 hours of booking.",
     schema: [business],
-    body: `<section class="page-head wrap">
+    body: `<section class="page-head"><div class="wrap">
   <h1>Snow removal across Regina</h1>
   <p class="lede">We clear homes inside Regina city limits. Here are some of the neighbourhoods we cover. If yours isn’t listed but you’re in Regina, you can still book.</p>
-</section>
+</div></section>
 <section class="section-tight" style="padding-top:0">
   <div class="wrap">
     <ul class="areas">${AREAS.map((a) => `<li>${a}</li>`).join("")}</ul>
@@ -565,10 +565,10 @@ ${ctaBand()}`,
     title: "Snow Removal Questions | ClearLot YQR Regina",
     description: "Answers about our Regina snow removal: how fast we come, driveway sizes, corner lots, paying, booking for parents and the whole winter plan.",
     schema: [faqSchema],
-    body: `<section class="page-head wrap">
+    body: `<section class="page-head"><div class="wrap">
   <h1>Questions and answers</h1>
   <p class="lede">Can’t find your answer? ${phone ? `Call <a href="${tel(phone)}" data-call>${phone}</a>.` : `<a href="/contact/">Contact us</a>.`}</p>
-</section>
+</div></section>
 <section class="section-tight" style="padding-top:0">
   <div class="wrap" style="max-width:860px">${faqList(FAQ)}</div>
 </section>
@@ -580,10 +580,10 @@ ${ctaBand()}`,
     path: "/contact/",
     title: "Contact ClearLot YQR | Snow Removal in Regina",
     description: "Contact ClearLot YQR for snow removal in Regina. Call us or book online.",
-    body: `<section class="page-head wrap">
+    body: `<section class="page-head"><div class="wrap">
   <h1>Contact us</h1>
   <p class="lede">The quickest way to get your snow cleared is to book online. You can also reach us here.</p>
-</section>
+</div></section>
 <section class="section-tight" style="padding-top:0">
   <div class="wrap stack" style="max-width:860px">
     ${phone ? `<div class="call-panel"><div><p class="text-2">Phone</p><a class="call-number" href="${tel(phone)}" data-call>${phone}</a></div></div>` : ""}
@@ -598,7 +598,7 @@ ${ctaBand()}`,
     path: "/privacy/",
     title: "Privacy | ClearLot YQR",
     description: "How ClearLot YQR handles the information you give us when you book snow removal.",
-    body: `<section class="page-head wrap"><h1>Privacy</h1></section>
+    body: `<section class="page-head"><div class="wrap"><h1>Privacy</h1></div></section>
 <section class="section-tight" style="padding-top:0">
   <div class="wrap prose">
     <p>When you book, we collect your address, your name, your phone number, and your email if you give it, plus anything you write in the notes. If you book for someone else, we also collect their name and phone number.</p>
