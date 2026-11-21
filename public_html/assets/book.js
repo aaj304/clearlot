@@ -273,7 +273,7 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d.address) input.value = d.address;
-        if (d.postal && !form.postal.value) form.postal.value = d.postal;
+        form.postal.value = d.postal || "";
         if (d.inRegina === false) setError(steps[0], "That address looks like it’s outside Regina. We only clear homes inside the city for now.", input);
       })
       .catch(function () {})
@@ -287,6 +287,7 @@
 
   input.addEventListener("input", function () {
     form.placeId.value = "";
+    form.postal.value = "";
     if (!enabled) return;
     clearTimeout(timer);
     var q = input.value.trim();

@@ -96,9 +96,12 @@ $body = [
 if ($session !== '') $body['sessionToken'] = $session;
 $data = google('POST', 'https://places.googleapis.com/v1/places:autocomplete', $key, [], $body);
 $out = [];
-foreach (array_slice($data['suggestions'] ?? [], 0, 5) as $sug) {
+foreach ($data['suggestions'] ?? [] as $sug) {
+    if (count($out) >= 5) break;
     $p = $sug['placePrediction'] ?? null;
     if (!$p || empty($p['placeId'])) continue;
+    // Keep only addresses Google places in Regina.
+    if (stripos($p['text']['text'] ?? '', 'Regina') === false) continue;
     $out[] = [
         'id' => $p['placeId'],
         'main' => $p['structuredFormat']['mainText']['text'] ?? ($p['text']['text'] ?? ''),

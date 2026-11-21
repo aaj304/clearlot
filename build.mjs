@@ -105,6 +105,6 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 const missing = ["phone", "bookingEmail"].filter((k) => !site[k]);
 console.log(`Built ${pages.length} pages into ${OUT}/`);
 if (missing.length) console.warn(`Note: no ${missing.join(" or ")} set yet (phone goes in site.config.json, bookingEmail in site.private.json).`);
-console.log(site.googleMapsApiKey ? "Address suggestions: on" : "Address suggestions: off until googleMapsApiKey is added to site.private.json");
+console.log(site.googleMapsApiKey ? "Address suggestions: key included in this build" : "Address suggestions: uses the key saved on the server (clearlot-bookings/settings.json), if there is one");
 console.log(site.smtpHost ? `Email: SMTP via ${site.smtpHost}` : "Email: the server's built-in mail (add SMTP settings to site.private.json for better delivery)");
 console.log(`Whole winter priced as ${visits} visits (${prices.season.visitsPerMonth} a month for ${prices.season.months} months).`);

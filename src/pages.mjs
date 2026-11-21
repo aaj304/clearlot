@@ -281,8 +281,7 @@ ${ctaBand()}`,
             "What’s the address?",
             "Where should we clear the snow?",
             `<div class="field"><label for="address">Street address</label><div class="ac"><input class="input" id="address" name="address" autocomplete="street-address" placeholder="Start typing, for example 2405 Albert St" required maxlength="160"><ul class="ac-list" id="address-list" role="listbox" aria-label="Suggested addresses" hidden></ul></div><p class="hint" data-ac-hint hidden>Pick your address from the list, or keep typing</p></div>
-             <input type="hidden" name="placeId" value="">
-             <div class="field"><label for="postal">Postal code <span class="hint">(optional)</span></label><input class="input" id="postal" name="postal" autocomplete="postal-code" maxlength="7" style="max-width:220px"></div>
+             <input type="hidden" name="placeId" value=""><input type="hidden" name="postal" value="">
              <p class="city-fixed">${ICON.pin} Regina, Saskatchewan</p>`,
           )}
           ${step(

@@ -66,6 +66,11 @@ own domain (hPanel → Emails), then add to `site.private.json`:
 3. Create an API key. Under API restrictions, allow only Places API (New).
 4. Put it in `site.private.json` as `googleMapsApiKey`, rebuild and upload.
 
+Where the key lives on Hostinger: only in `clearlot-bookings/settings.json`, one folder above
+`public_html` (File Manager → the site's domain folder). Never paste it into `address.php` or any
+other file in `public_html`: those are replaced on every upload, and an edit there can break the page.
+To change the key, edit `"googleMapsApiKey"` in that settings file.
+
 The key stays on the server: the browser asks `/api/address.php`, which asks Google and only returns
 addresses inside Regina. Without a key the address box works as a normal text field.
 
