@@ -55,8 +55,8 @@ body {
   color: var(--ink);
   font-weight: 450;
   font-family: var(--sans);
-  /* Sized for older readers: 19px body. */
-  font-size: 1.1875rem;
+  /* Sized for older readers: 20px body. */
+  font-size: 1.25rem;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
@@ -81,10 +81,10 @@ h3 { font-family: var(--sans); font-size: 1.3125rem; font-weight: 600; line-heig
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: 56px; padding: 0 24px;
+  min-height: 60px; padding: 0 26px;
   border-radius: var(--r-ctl); border: 1.5px solid transparent;
-  font: inherit; font-size: 1.125rem; font-weight: 600; text-decoration: none; cursor: pointer;
-  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), color 150ms var(--ease), transform 150ms var(--ease);
+  font: inherit; font-size: 1.1875rem; font-weight: 600; text-decoration: none; cursor: pointer;
+  transition: background-color 200ms var(--ease), border-color 200ms var(--ease), color 200ms var(--ease), transform 250ms var(--ease), box-shadow 250ms var(--ease);
 }
 .btn:active { transform: scale(0.98); }
 .btn-primary { background: var(--navy); color: var(--on-navy); }
@@ -131,7 +131,7 @@ h3 { font-family: var(--sans); font-size: 1.3125rem; font-weight: 600; line-heig
 .on-navy .lede, .on-navy .text-2, .on-navy .muted { color: var(--on-navy-2); }
 @media (max-width: 720px) { .section { padding-block: 72px; } .section-tight { padding-block: 48px; } }
 
-.lede { font-size: 1.3125rem; line-height: 1.5; color: var(--ink-2); max-width: 34rem; }
+.lede { font-size: 1.375rem; line-height: 1.5; color: var(--ink-2); max-width: 34rem; }
 .text-2 { color: var(--ink-2); }
 .muted { color: var(--muted); }
 .small { font-size: 1.0625rem; }
@@ -213,7 +213,7 @@ h3 { font-family: var(--sans); font-size: 1.3125rem; font-weight: 600; line-heig
 .wo-monthly { color: var(--muted); }
 .wo-total strong { font-family: var(--serif); font-size: 2.25rem; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
 .wo-times { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; border-top: 1px dashed var(--line-strong); }
-.wo-times span { display: block; font-size: 0.9375rem; color: var(--muted); }
+.wo-times span { display: block; font-size: 1rem; color: var(--muted); }
 .wo-times strong { font-weight: 600; font-variant-numeric: tabular-nums; }
 .wo-due { color: var(--orange-ink); }
 
@@ -244,7 +244,7 @@ h3 { font-family: var(--sans); font-size: 1.3125rem; font-weight: 600; line-heig
 .option-title { display: block; font-weight: 600; font-size: 1.1875rem; line-height: 1.3; }
 .option-desc { display: block; color: var(--ink-2); font-size: 1.0625rem; line-height: 1.4; margin-top: 2px; }
 .option-price { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
-.option-price small { display: block; font-weight: 400; color: var(--muted); font-size: 0.9375rem; }
+.option-price small { display: block; font-weight: 400; color: var(--muted); font-size: 1rem; }
 .option:has(input:checked) { border: 3px solid var(--ink); padding: 15px 19px; background: #fff8f2; }
 .option:has(input:focus-visible) { outline: 3px solid var(--orange-ink); outline-offset: 3px; }
 .option-check { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: #fff; display: none; place-items: center; }
@@ -265,7 +265,7 @@ a.option { text-decoration: none; }
 .rate th, .rate td { padding: 16px 20px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
 .rate thead th { font-size: 1rem; font-weight: 600; color: var(--muted); border-bottom: 1.5px solid var(--ink); }
 .rate .amount { text-align: right; white-space: nowrap; }
-.rate td.amount small { display: block; color: var(--muted); font-size: 0.9375rem; font-weight: 400; }
+.rate td.amount small { display: block; color: var(--muted); font-size: 1rem; font-weight: 400; }
 .rate tbody th { font-weight: 600; }
 .rate tbody th span { display: block; font-weight: 400; color: var(--ink-2); font-size: 1.0625rem; }
 .rate tr.group th { padding-top: 28px; font-size: 1rem; color: var(--orange-ink); border-bottom-color: var(--line-strong); background: var(--sheet); }
@@ -420,8 +420,96 @@ textarea.input { padding: 14px 16px; min-height: 120px; line-height: 1.5; }
 .done-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr); gap: 72px; align-items: start; }
 @media (max-width: 860px) { .done-grid { grid-template-columns: 1fr; gap: 40px; } }
 
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* ---------- Estimate (whole winter) ---------- */
+.estimate-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 40px; align-items: center; padding: 36px; background: var(--card); border: 1px solid var(--line-strong); border-top: 6px solid var(--orange); border-radius: 0 0 var(--r-card) var(--r-card); box-shadow: var(--shadow-sheet); }
+.estimate-card h2, .estimate-card h3 { font-family: var(--serif); font-weight: 500; font-size: clamp(1.875rem, 1.4rem + 1.4vw, 2.5rem); line-height: 1.1; }
+.estimate-card > div > * + * { margin-top: 14px; }
+.estimate-card ul { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 10px; }
+.estimate-card li { display: flex; gap: 12px; align-items: flex-start; }
+.estimate-card li .icon { flex: none; margin-top: 3px; color: var(--good); }
+@media (max-width: 760px) { .estimate-card { grid-template-columns: 1fr; padding: 24px; } .estimate-card .btn { width: 100%; } }
+.rate-note { padding: 18px 20px; background: var(--sheet); border: 1px solid var(--line-strong); border-top: 0; color: var(--ink-2); }
+.rate-note strong { color: var(--ink); }
+.wo-total.is-estimate strong { font-size: 1.5rem; color: var(--orange-ink); }
 
+/* ---------- Reassurance strip under the hero ---------- */
+.assure { list-style: none; padding: 0; margin: 28px 0 0; display: flex; flex-wrap: wrap; gap: 12px 28px; }
+.assure li { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.125rem; }
+.assure .icon { flex: none; width: 28px; height: 28px; padding: 5px; border-radius: 50%; background: var(--navy); color: var(--on-navy); }
+.cta-sub { margin-top: 12px; color: var(--on-navy-2); max-width: 32rem; }
+
+/* ---------- Motion ----------
+   Gentle and slow, for every age: things rise softly into place as you scroll,
+   the hero plan inks itself in, and cards lift a little under the pointer.
+   Everything here is switched off when the visitor asks for less motion. */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes enter { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes ink { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: none; } }
+@keyframes print { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+@keyframes flash { 0% { background: #ffe4d1; } 100% { background: transparent; } }
+@keyframes fall { from { transform: translate3d(0, -10vh, 0); } to { transform: translate3d(var(--drift, 20px), 110vh, 0); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 106, 34, 0); } 50% { box-shadow: 0 0 0 8px rgba(239, 106, 34, 0.18); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hover: a small lift, never a jump. */
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px -12px rgba(13, 25, 43, 0.55); }
+  .btn:active { transform: translateY(0) scale(0.98); box-shadow: none; }
+  .btn .icon { transition: transform 250ms var(--ease); }
+  .btn:hover .icon:last-child { transform: translateX(3px); }
+  .option { transition: border-color 200ms var(--ease), background-color 200ms var(--ease), transform 250ms var(--ease), box-shadow 250ms var(--ease); }
+  .option:hover { transform: translateY(-3px); box-shadow: 0 14px 28px -18px rgba(13, 25, 43, 0.45); }
+  .steps li, .estimate-card, .call-panel { transition: transform 300ms var(--ease), box-shadow 300ms var(--ease); }
+  .steps li:hover { transform: translateY(-4px); box-shadow: 0 18px 36px -22px rgba(13, 25, 43, 0.5); }
+  .link-rows a .icon { transition: transform 250ms var(--ease); }
+  .link-rows a:hover .icon { transform: translateX(6px); }
+  .nav-desktop a { position: relative; }
+  .faq summary { transition: color 200ms var(--ease); }
+  .faq summary:hover { color: var(--orange-ink); }
+  .faq details[open] .answer { animation: rise 350ms var(--ease); }
+  .nav-mobile[open] .nav-mobile-panel { animation: rise 250ms var(--ease); }
+  .option:has(input:checked) .option-check { animation: ink 300ms var(--ease); }
+
+  /* Hero entrance: headline, words, buttons, then the drawing sheet. */
+  .js .hero .eyebrow, .js .hero h1, .js .hero-side > *, .js .hero .assure, .js .page-head .wrap > * { animation: enter 800ms var(--ease) both; }
+  .js .hero h1 { animation-delay: 80ms; }
+  .js .hero-side > :nth-child(1) { animation-delay: 180ms; }
+  .js .hero-side > :nth-child(2) { animation-delay: 260ms; }
+  .js .hero-side > :nth-child(3) { animation-delay: 340ms; }
+  .js .hero .assure { animation-delay: 420ms; }
+  .js .page-head .wrap > :nth-child(2) { animation-delay: 80ms; }
+  .js .page-head .wrap > :nth-child(3) { animation-delay: 160ms; }
+  .js .page-head .wrap > :nth-child(4) { animation-delay: 240ms; }
+  .js .hero .sheet { animation: enter 1000ms 300ms var(--ease) both; }
+  /* The plan inks itself in, surface by surface, then the work order prints line by line. */
+  .js .hero .lot .var.on { animation: ink 700ms var(--ease) both; transform-box: fill-box; transform-origin: center; }
+  .js .hero .lot [data-k="driveway"].on { animation-delay: 900ms; }
+  .js .hero .lot [data-k="sidewalk"].on { animation-delay: 1150ms; }
+  .js .hero .lot [data-k="walkway"].on { animation-delay: 1400ms; }
+  .js .hero .lot [data-k="steps"].on { animation-delay: 1650ms; }
+  .js .hero .wo-lines > div { animation: print 500ms var(--ease) both; }
+  .js .hero .wo-lines > div:nth-child(1) { animation-delay: 1000ms; }
+  .js .hero .wo-lines > div:nth-child(2) { animation-delay: 1250ms; }
+  .js .hero .wo-lines > div:nth-child(3) { animation-delay: 1500ms; }
+  .js .hero .wo-lines > div:nth-child(4) { animation-delay: 1750ms; }
+  .js .hero .wo-total, .js .hero .wo-times { animation: enter 600ms 2000ms var(--ease) both; }
+  .js .hero .wo-due { display: inline-block; border-radius: 4px; animation: glow 2400ms 2600ms ease-in-out 2; }
+
+  /* Scroll-in: site.js adds .reveal to blocks below the fold and .in when they come into view. */
+  .js .reveal { opacity: 0; transform: translateY(28px); transition: opacity 900ms var(--ease), transform 900ms var(--ease); transition-delay: var(--d, 0ms); }
+  .js .reveal.in { opacity: 1; transform: none; }
+
+  /* Booking: each new line on the work order arrives with a soft highlight. */
+  .wo-lines > div.new { animation: print 400ms var(--ease), flash 1400ms var(--ease); }
+
+  /* Light snow in the hero. Slow, sparse and behind everything. */
+  .snow { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .snow i { position: absolute; top: 0; width: var(--s, 6px); height: var(--s, 6px); border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(13, 25, 43, 0.12); opacity: 0.9; animation: fall var(--t, 14s) linear var(--w, 0s) infinite both; }
+}
+.hero { position: relative; overflow: hidden; }
+.hero > .wrap { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: 1ms !important; }
+  .snow { display: none; }
 }
+@media print { .reveal { opacity: 1 !important; transform: none !important; } .snow { display: none; } }
+.example strong.example-est { font-size: 1.75rem; line-height: 1.2; }

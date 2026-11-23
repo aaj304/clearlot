@@ -17,10 +17,16 @@
   ticket.querySelector("[data-booked]").textContent = window.clearlotTime(when);
   if (plan === "winter") {
     ticket.querySelector("[data-cleared]").textContent = "24 h after each snowfall";
+    document.querySelector("h1").textContent = "Thank you. We have your request.";
+    document.querySelector(".eyebrow").textContent = "Request received";
+    document.querySelector(".lede").textContent =
+      "We’ll call you to set up a visit and give you a price for the whole winter. Nothing has been charged.";
+    document.querySelector("[data-call-text]").textContent =
+      "To set up a time to see your home. Then we give you a price for the whole winter.";
     document.querySelector("[data-plan-text]").textContent =
-      "After every snowfall on your whole winter plan, within 24 hours after the snow stops.";
+      "Once you say yes, after every snowfall, within 24 hours after the snow stops.";
     document.querySelector("[data-pay-text]").textContent =
-      "We arrange payment when we call: all at once, or in monthly payments from November to March.";
+      "All at once, or month by month from November to March.";
   } else {
     ticket.querySelector("[data-cleared]").textContent = window.clearlotTime(new Date(when.getTime() + 864e5));
   }

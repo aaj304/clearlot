@@ -10,7 +10,6 @@
   var next = form.querySelector("[data-next]");
   var lot = form.querySelector(".lot");
   var wo = form.querySelector(".wo");
-  var MONTHS = prices.months;
   var current = 0;
   var backToReview = false; // after "Change" on the review screen, Next returns there
 
@@ -44,8 +43,9 @@
       iceMelt: form.iceMelt.checked,
     };
   }
+  // Whole winter is never priced online: we visit and give an estimate.
   function price(s) {
-    var p = prices[s.plan || "once"];
+    var p = prices.once;
     var t = (p.driveway[s.driveway] || 0) + (p.sidewalk[s.sidewalk] || 0) + (p.walkway[s.walkway] || 0);
     if (s.steps) t += p.steps;
     if (s.iceMelt) t += p.iceMelt;
@@ -68,22 +68,31 @@
     lot.setAttribute("data-ice", s.iceMelt ? "1" : "0");
 
     // The work order: one line per chosen surface with its price, then the total.
-    var p = prices[s.plan || "once"];
+    var p = prices.once;
+    var winter = s.plan === "winter";
     var lines = [];
     if (s.driveway) lines.push([LABELS["driveway:" + s.driveway], p.driveway[s.driveway]]);
     if (s.sidewalk && s.sidewalk !== "none") lines.push([LABELS["sidewalk:" + s.sidewalk], p.sidewalk[s.sidewalk]]);
     if (s.walkway && s.walkway !== "none") lines.push([LABELS["walkway:" + s.walkway], p.walkway[s.walkway]]);
     if (s.steps) lines.push(["Front steps", p.steps]);
     if (s.iceMelt) lines.push(["Ice melt", p.iceMelt]);
+    // Lines that weren't there a moment ago arrive with a soft highlight.
+    var had = {};
+    wo.querySelectorAll("[data-lines] dt").forEach(function (dt) { had[dt.textContent] = true; });
+    var first = !wo.dataset.drawn;
+    wo.dataset.drawn = "1";
     wo.querySelector("[data-lines]").innerHTML = lines
-      .map(function (l) { return "<div><dt>" + l[0] + "</dt><dd>" + money(l[1]) + "</dd></div>"; })
+      .map(function (l) {
+        var cls = !first && !had[l[0]] ? ' class="new"' : "";
+        return "<div" + cls + "><dt>" + l[0] + "</dt><dd>" + (winter ? "Included" : money(l[1])) + "</dd></div>";
+      })
       .join("");
     var total = price(s);
     wo.querySelector("[data-total-row]").hidden = !s.driveway;
-    wo.querySelector("[data-total]").textContent = money(total);
-    wo.querySelector("[data-total-unit]").textContent = s.plan === "winter" ? "Whole winter, plus GST" : "Per visit, plus GST";
-    wo.querySelector("[data-monthly]").textContent =
-      s.plan === "winter" ? "or " + money(Math.round(total / MONTHS)) + " a month for " + MONTHS + " months" : "";
+    wo.querySelector("[data-total-row]").classList.toggle("is-estimate", winter);
+    wo.querySelector("[data-total]").textContent = winter ? "Estimate" : money(total);
+    wo.querySelector("[data-total-unit]").textContent = winter ? "Whole winter price" : "Per visit, plus GST";
+    wo.querySelector("[data-monthly]").textContent = winter ? "We visit your home and give you a price" : "";
 
     var now = new Date();
     if (s.plan === "winter") {
@@ -119,7 +128,7 @@
       ["Walkway", LABELS["walkway:" + s.walkway], "walkway"],
       ["Extras", extras.length ? extras.join(", ") : "None", "extras"],
       ["Contact", who, "contact"],
-      ["Price", money(price(s)) + (s.plan === "winter" ? " for the winter, or " + money(Math.round(price(s) / MONTHS)) + " a month for " + MONTHS + " months" : " per visit") + ", plus GST", null],
+      ["Price", s.plan === "winter" ? "We visit your home and give you a price for the whole winter" : money(price(s)) + " per visit, plus GST", null],
     ];
     form.querySelector("[data-review]").innerHTML = rows
       .map(function (r) {
@@ -173,8 +182,12 @@
     back.hidden = current === 0;
     var last = current === steps.length - 1;
     if (last) backToReview = false;
+    var isWinter = val("plan") === "winter";
+    form.querySelector("[data-review-note]").textContent = isWinter
+      ? "We’ll call you to set up a time to see your home, then give you a price for the winter. Nothing is charged now."
+      : "We’ll call you to confirm before we come. Nothing is charged now.";
     next.innerHTML = last
-      ? "Send my booking"
+      ? isWinter ? "Ask for my estimate" : "Send my booking"
       : backToReview
         ? "Back to my booking"
         : steps[current].dataset.step === "extras" && !form.steps.checked && !form.iceMelt.checked

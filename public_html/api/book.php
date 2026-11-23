@@ -82,7 +82,9 @@ if (!clearlot_rate_ok('book', 6, 3600)) {
     page(429, 'Too many bookings at once', 'Please wait a little and try again.');
 }
 
-$p = $P[$plan];
+// Whole winter is never priced online or in emails: we visit and give an estimate.
+$winter = $plan === 'winter';
+$p = $P['once'];
 $money = fn ($n) => '$' . number_format((float) $n, 2);
 $lines = [[$L['driveway'][$driveway], $p['driveway'][$driveway]]];
 if ($sidewalk !== 'none') $lines[] = [$L['sidewalk'][$sidewalk], $p['sidewalk'][$sidewalk]];
@@ -91,8 +93,7 @@ if ($steps) $lines[] = ['Front steps', $p['steps']];
 if ($ice) $lines[] = ['Ice melt', $p['iceMelt']];
 $total = array_sum(array_column($lines, 1));
 $gst = round($total * $catalog['gst'], 2);
-$unit = $plan === 'winter' ? 'for the winter' : 'per visit';
-$monthly = $plan === 'winter' ? round(($total + $gst) / $months, 2) : 0;
+$unit = 'per visit';
 
 $ref = 'CL-' . strtoupper(bin2hex(random_bytes(3)));
 $now = new DateTimeImmutable('now', new DateTimeZone('America/Regina'));
@@ -100,18 +101,23 @@ $due = $plan === 'once' ? $now->modify('+24 hours')->format('D M j, g:i a') : 'w
 $fullAddress = $address . ', Regina, SK' . ($postal !== '' ? " $postal" : '');
 
 $workOrder = [];
-foreach ($lines as [$label, $amount]) $workOrder[] = '  ' . str_pad($label, 28) . $money($amount);
-$workOrder[] = '  ' . str_repeat('-', 38);
-$workOrder[] = '  ' . str_pad('Subtotal ' . $unit, 28) . $money($total);
-$workOrder[] = '  ' . str_pad('GST (5%)', 28) . $money($gst);
-$workOrder[] = '  ' . str_pad('Total', 28) . $money($total + $gst);
-if ($plan === 'winter') $workOrder[] = '  or ' . $months . ' monthly payments of ' . $money($monthly) . ', November to March';
+if ($winter) {
+    foreach ($lines as [$label]) $workOrder[] = '  - ' . $label;
+    $workOrder[] = '  ' . str_repeat('-', 38);
+    $workOrder[] = '  Price: we visit your home and give you an estimate for the whole winter.';
+} else {
+    foreach ($lines as [$label, $amount]) $workOrder[] = '  ' . str_pad($label, 28) . $money($amount);
+    $workOrder[] = '  ' . str_repeat('-', 38);
+    $workOrder[] = '  ' . str_pad('Subtotal ' . $unit, 28) . $money($total);
+    $workOrder[] = '  ' . str_pad('GST (5%)', 28) . $money($gst);
+    $workOrder[] = '  ' . str_pad('Total', 28) . $money($total + $gst);
+}
 
 // ---------- Your copy ----------
 $owner = array_merge([
-    "New booking $ref",
+    $winter ? "New whole winter estimate request $ref" : "New booking $ref",
     '',
-    "CLEAR BY: $due",
+    $winter ? 'NEXT STEP: call to book a visit and give an estimate for the winter' : "CLEAR BY: $due",
     '',
     'Address:   ' . $fullAddress . ($verified ? '  (picked from Google suggestions)' : ''),
     'Map:       https://www.google.com/maps/search/?api=1&query=' . rawurlencode($fullAddress),
@@ -135,7 +141,9 @@ $first = explode(' ', $name)[0];
 $customer = array_merge([
     "Hi $first,",
     '',
-    'Thank you for booking snow removal with ' . $cfg['siteName'] . '. Here is your work order.',
+    $winter
+        ? 'Thank you for asking about whole winter snow removal with ' . $cfg['siteName'] . '. Here is what you asked us to look at.'
+        : 'Thank you for booking snow removal with ' . $cfg['siteName'] . '. Here is your work order.',
     '',
     "  Booking number: $ref",
     "  Address: $fullAddress",
@@ -145,9 +153,15 @@ $customer = array_merge([
 ], $workOrder, [
     '',
     'What happens next',
-    '  1. We call you at ' . $phone . ' to confirm the details.',
-    '  2. We clear your snow ' . ($plan === 'once' ? 'within 24 hours of your booking.' : 'after every snowfall, within 24 hours after it stops.'),
-    '  3. You pay after we confirm. Nothing has been charged.',
+    ...($winter ? [
+        '  1. We call you at ' . $phone . ' to set up a time to see your home.',
+        '  2. We visit and give you a price for the whole winter.',
+        '  3. Once you say yes, we clear after every snowfall, within 24 hours after it stops. Nothing has been charged.',
+    ] : [
+        '  1. We call you at ' . $phone . ' to confirm the details.',
+        '  2. We clear your snow within 24 hours of your booking.',
+        '  3. You pay after we confirm. Nothing has been charged.',
+    ]),
     '',
     'Need to change something? ' . ($cfg['phone'] !== '' ? 'Call us at ' . $cfg['phone'] . ' or reply to this email.' : 'Reply to this email.'),
     '',
@@ -156,9 +170,9 @@ $customer = array_merge([
 if ($forOther) array_splice($customer, 7, 0, ['  Booked for: ' . $otherName]);
 
 $ownerMailed = $cfg['bookingEmail'] !== ''
-    ? clearlot_send($cfg, $cfg['bookingEmail'], "New booking $ref: " . $L['driveway'][$driveway] . ', ' . $L['plan'][$plan] . " at $address", implode("\n", $owner), $email)
+    ? clearlot_send($cfg, $cfg['bookingEmail'], ($winter ? "Winter estimate request $ref: " : "New booking $ref: ") . $L['driveway'][$driveway] . ', ' . $L['plan'][$plan] . " at $address", implode("\n", $owner), $email)
     : false;
-$customerMailed = clearlot_send($cfg, $email, "Your snow removal booking $ref", implode("\n", $customer), $cfg['bookingEmail']);
+$customerMailed = clearlot_send($cfg, $email, $winter ? "Your whole winter estimate request $ref" : "Your snow removal booking $ref", implode("\n", $customer), $cfg['bookingEmail']);
 
 $booking = [
     'ref' => $ref,
@@ -170,8 +184,8 @@ $booking = [
     'walkway' => $walkway,
     'steps' => $steps,
     'iceMelt' => $ice,
-    'price' => $total,
-    'gst' => $gst,
+    'price' => $winter ? null : $total,
+    'gst' => $winter ? null : $gst,
     'address' => $address,
     'postal' => $postal,
     'addressFromGoogle' => $verified,
