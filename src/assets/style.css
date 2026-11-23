@@ -513,3 +513,29 @@ textarea.input { padding: 14px 16px; min-height: 120px; line-height: 1.5; }
 }
 @media print { .reveal { opacity: 1 !important; transform: none !important; } .snow { display: none; } }
 .example strong.example-est { font-size: 1.75rem; line-height: 1.2; }
+
+/* ---------- Dark hero: a winter night sky over the drawing sheet, so the snow shows ---------- */
+.hero {
+  background-color: var(--navy);
+  background-image:
+    radial-gradient(ellipse at 70% -10%, rgba(120, 150, 200, 0.22), transparent 60%),
+    linear-gradient(rgba(246, 244, 239, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(246, 244, 239, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(246, 244, 239, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(246, 244, 239, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  background-position: 0 0, -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+  color: var(--on-navy);
+  border-bottom: 0;
+}
+.hero .eyebrow { color: #ff9a5c; }
+.hero .lede { color: var(--on-navy-2); }
+.hero .hero-note { color: #c2cad8; }
+.hero .btn-primary { background: var(--paper); color: var(--ink); }
+.hero .btn-primary:hover { background: #ffffff; }
+.hero .btn-quiet { background: transparent; color: var(--on-navy); border-color: rgba(246, 244, 239, 0.8); }
+.hero .btn-quiet:hover { border-color: var(--on-navy); background: rgba(246, 244, 239, 0.08); }
+.hero .assure .icon { background: var(--orange); color: var(--navy); }
+.hero :focus-visible { outline-color: #ff9a5c; }
+.hero .sheet { color: var(--ink); border-color: rgba(246, 244, 239, 0.35); box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.7); }
+.hero .snow i { background: #ffffff; box-shadow: 0 0 6px rgba(255, 255, 255, 0.55); opacity: 0.85; }

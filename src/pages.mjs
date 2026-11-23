@@ -28,7 +28,7 @@ export function buildPages(site, prices) {
   const base = site.siteUrl.replace(/\/$/, "");
 
   // A few slow snowflakes for the home hero. Fixed values so every build is the same.
-  const snow = `<div class="snow" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => {
+  const snow = `<div class="snow" aria-hidden="true">${Array.from({ length: 34 }, (_, i) => {
     const x = (i * 37 + 11) % 100;
     const size = 4 + ((i * 7) % 5);
     const t = 12 + ((i * 5) % 10);
