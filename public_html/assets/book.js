@@ -90,9 +90,9 @@
     var total = price(s);
     wo.querySelector("[data-total-row]").hidden = !s.driveway;
     wo.querySelector("[data-total-row]").classList.toggle("is-estimate", winter);
-    wo.querySelector("[data-total]").textContent = winter ? "Estimate" : money(total);
+    wo.querySelector("[data-total]").textContent = winter ? "Free estimate" : money(total);
     wo.querySelector("[data-total-unit]").textContent = winter ? "Whole winter price" : "Per visit, plus GST";
-    wo.querySelector("[data-monthly]").textContent = winter ? "We visit your home and give you a price" : "";
+    wo.querySelector("[data-monthly]").textContent = winter ? "We visit your home to give it" : "";
 
     var now = new Date();
     if (s.plan === "winter") {
@@ -128,7 +128,7 @@
       ["Walkway", LABELS["walkway:" + s.walkway], "walkway"],
       ["Extras", extras.length ? extras.join(", ") : "None", "extras"],
       ["Contact", who, "contact"],
-      ["Price", s.plan === "winter" ? "We visit your home and give you a price for the whole winter" : money(price(s)) + " per visit, plus GST", null],
+      ["Price", s.plan === "winter" ? "Free estimate: we visit your home and give you a price for the whole winter" : money(price(s)) + " per visit, plus GST", null],
     ];
     form.querySelector("[data-review]").innerHTML = rows
       .map(function (r) {
@@ -184,10 +184,10 @@
     if (last) backToReview = false;
     var isWinter = val("plan") === "winter";
     form.querySelector("[data-review-note]").textContent = isWinter
-      ? "We’ll call you to set up a time to see your home, then give you a price for the winter. Nothing is charged now."
+      ? "We’ll call you to set up a time to see your home, then give you a free estimate for the winter. Nothing is charged now."
       : "We’ll call you to confirm before we come. Nothing is charged now.";
     next.innerHTML = last
-      ? isWinter ? "Ask for my estimate" : "Send my booking"
+      ? isWinter ? "Ask for my free estimate" : "Send my booking"
       : backToReview
         ? "Back to my booking"
         : steps[current].dataset.step === "extras" && !form.steps.checked && !form.iceMelt.checked

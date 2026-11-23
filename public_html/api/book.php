@@ -104,7 +104,7 @@ $workOrder = [];
 if ($winter) {
     foreach ($lines as [$label]) $workOrder[] = '  - ' . $label;
     $workOrder[] = '  ' . str_repeat('-', 38);
-    $workOrder[] = '  Price: we visit your home and give you an estimate for the whole winter.';
+    $workOrder[] = '  Price: we visit your home and give you a free estimate for the whole winter.';
 } else {
     foreach ($lines as [$label, $amount]) $workOrder[] = '  ' . str_pad($label, 28) . $money($amount);
     $workOrder[] = '  ' . str_repeat('-', 38);
@@ -155,7 +155,7 @@ $customer = array_merge([
     'What happens next',
     ...($winter ? [
         '  1. We call you at ' . $phone . ' to set up a time to see your home.',
-        '  2. We visit and give you a price for the whole winter.',
+        '  2. We visit and give you a free estimate for the whole winter.',
         '  3. Once you say yes, we clear after every snowfall, within 24 hours after it stops. Nothing has been charged.',
     ] : [
         '  1. We call you at ' . $phone . ' to confirm the details.',
@@ -172,7 +172,7 @@ if ($forOther) array_splice($customer, 7, 0, ['  Booked for: ' . $otherName]);
 $ownerMailed = $cfg['bookingEmail'] !== ''
     ? clearlot_send($cfg, $cfg['bookingEmail'], ($winter ? "Winter estimate request $ref: " : "New booking $ref: ") . $L['driveway'][$driveway] . ', ' . $L['plan'][$plan] . " at $address", implode("\n", $owner), $email)
     : false;
-$customerMailed = clearlot_send($cfg, $email, $winter ? "Your whole winter estimate request $ref" : "Your snow removal booking $ref", implode("\n", $customer), $cfg['bookingEmail']);
+$customerMailed = clearlot_send($cfg, $email, $winter ? "Your free whole winter estimate request $ref" : "Your snow removal booking $ref", implode("\n", $customer), $cfg['bookingEmail']);
 
 $booking = [
     'ref' => $ref,

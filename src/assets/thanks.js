@@ -20,9 +20,9 @@
     document.querySelector("h1").textContent = "Thank you. We have your request.";
     document.querySelector(".eyebrow").textContent = "Request received";
     document.querySelector(".lede").textContent =
-      "We’ll call you to set up a visit and give you a price for the whole winter. Nothing has been charged.";
+      "We’ll call you to set up a visit and give you a free estimate for the whole winter. Nothing has been charged.";
     document.querySelector("[data-call-text]").textContent =
-      "To set up a time to see your home. Then we give you a price for the whole winter.";
+      "To set up a time to see your home. Then we give you a free estimate for the whole winter.";
     document.querySelector("[data-plan-text]").textContent =
       "Once you say yes, after every snowfall, within 24 hours after the snow stops.";
     document.querySelector("[data-pay-text]").textContent =

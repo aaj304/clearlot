@@ -7,21 +7,21 @@ export function buildPages(site, prices) {
   const cm = P.season.triggerCm;
   const seasonLabel = P.season.label;
   const months = P.season.months;
-  const winterDesc = CATALOG.plan.winter.desc.replace("{cm}", cm).replace("{season}", seasonLabel) + `. We visit your home first and give you a price for the winter`;
+  const winterDesc = CATALOG.plan.winter.desc.replace("{cm}", cm).replace("{season}", seasonLabel) + `. We visit your home first and give you a free estimate for the winter`;
   // Whole-winter prices are never shown. We come out, look at the property and give an estimate.
-  const estimateLine = "We visit your home and give you a price for the whole winter";
+  const estimateLine = "We visit your home and give you a free estimate for the whole winter";
   const estimateCard = (heading = "Want us all winter? We’ll come and see your home first", tag = "h2") => `<div class="estimate-card">
   <div>
     <p class="eyebrow">Whole winter plan</p>
     <${tag}>${heading}</${tag}>
-    <p class="text-2">Every home is different, so we don’t guess at a price for the season. We visit, look at your driveway, sidewalk and paths, and give you one price for the whole winter before you decide.</p>
+    <p class="text-2">Every home is different, so we don’t guess at a price for the season. We visit, look at your driveway, sidewalk and paths, and give you a free estimate for the whole winter before you decide. There’s no cost to ask.</p>
     <ul>
       <li>${ICON.check}<span>Cleared after every snowfall of ${cm} cm or more, ${seasonLabel}</span></li>
       <li>${ICON.check}<span>You never have to call us. We just come</span></li>
       <li>${ICON.check}<span>Pay all at once or month by month</span></li>
     </ul>
   </div>
-  <a class="btn btn-primary" href="/book/?plan=winter">Ask for a winter estimate ${ICON.right}</a>
+  <a class="btn btn-primary" href="/book/?plan=winter">Ask for a free estimate ${ICON.right}</a>
 </div>`;
   const phone = site.phone;
   const callBtn = (cls = "btn-quiet") => (phone ? `<a class="btn ${cls}" href="${tel(phone)}" data-call>${ICON.phone} Call ${phone}</a>` : "");
@@ -70,8 +70,8 @@ export function buildPages(site, prices) {
     ["Do I need to be home?", `<p>No. If we need to get through a gate, add the gate code or where the latch is in your booking notes.</p>`],
     ["How do I pay?", `<p>Nothing is charged online. After you book, we call you to confirm the details and arrange payment.</p>`],
     ["Can I book for my parents or a neighbour?", `<p>Yes. In the booking, tick “I’m booking for someone else” and add their name and phone number. We can call you, them, or both.</p>`],
-    ["What does the whole winter plan cover?", `<p>Every snowfall of ${cm} cm or more from ${seasonLabel}, for the areas you picked. We visit your home first and give you one price for the winter, and it does not go up if it snows a lot. Pay it all at once, or month by month from November to March.</p>`],
-    ["How much is the whole winter plan?", `<p>Every home is different, so we come out, look at your driveway, sidewalk and paths, and give you a price for the whole winter before you decide. Ask for an estimate in the booking by choosing “Whole winter”.</p>`],
+    ["What does the whole winter plan cover?", `<p>Every snowfall of ${cm} cm or more from ${seasonLabel}, for the areas you picked. We visit your home first and give you a free estimate, one price for the winter, and it does not go up if it snows a lot. Pay it all at once, or month by month from November to March.</p>`],
+    ["How much is the whole winter plan?", `<p>Every home is different, so we come out, look at your driveway, sidewalk and paths, and give you a free estimate for the whole winter before you decide. Ask for one in the booking by choosing “Whole winter”.</p>`],
     ["What is the difference between one-time and whole winter?", `<p>One-time is a single visit after a snowfall, when you need it. Whole winter means you don’t have to remember to book: we come after every snowfall of ${cm} cm or more.</p>`],
     ["Do you use ice melt?", `<p>Only if you ask for it. Add ice melt in the extras step and we spread it on your driveway and paths after clearing.</p>`],
     ["Do prices include GST?", `<p>No. Prices are in Canadian dollars, and 5% GST is added.</p>`],
@@ -106,7 +106,7 @@ export function buildPages(site, prices) {
   const extraRows = Object.entries(CATALOG.extras)
     .map(([k, o]) => `<tr><th scope="row">${o.label}<span>${o.desc}</span></th><td class="amount">${money(P.once[k])}</td></tr>`)
     .join("");
-  const rateNote = `<p class="rate-note"><strong>Whole winter plan:</strong> ${estimateLine.toLowerCase()}. <a href="/book/?plan=winter">Ask for an estimate</a></p>`;
+  const rateNote = `<p class="rate-note"><strong>Whole winter plan:</strong> ${estimateLine.toLowerCase()}. <a href="/book/?plan=winter">Ask for a free estimate</a></p>`;
   const rateTable = (caption, head, rows) => `<div><table class="rate">
   <caption>${caption}</caption>
   <thead><tr><th scope="col">${head}</th><th scope="col" class="amount">One time</th></tr></thead>
@@ -120,7 +120,7 @@ export function buildPages(site, prices) {
   const exampleBox = `<div class="example">
   <p class="text-2">Example: a double driveway, a regular sidewalk and a front walkway</p>
   <div><strong>${money(exOnce)}</strong><span class="muted">one time</span></div>
-  <div><strong class="example-est">Whole winter</strong><span class="muted">we visit and give you a price</span></div>
+  <div><strong class="example-est">Whole winter</strong><span class="muted">free estimate at your home</span></div>
 </div>`;
 
   const optionCard = (name, value, o, diagram, { type = "radio", once, winter, unit = true } = {}) => {
@@ -129,7 +129,7 @@ export function buildPages(site, prices) {
         ? ""
         : once === 0 && winter === 0
           ? `<span class="option-price"><small>No charge</small></span>`
-          : `<span class="option-price"><span data-show-plan="once">${unit ? "" : "+"}${money(once)}<small>${unit ? "per visit" : "per visit"}</small></span><span data-show-plan="winter"><small>Priced at your visit</small></span></span>`;
+          : `<span class="option-price"><span data-show-plan="once">${unit ? "" : "+"}${money(once)}<small>${unit ? "per visit" : "per visit"}</small></span><span data-show-plan="winter"><small>Free estimate</small></span></span>`;
     return `<label class="option">
   <input type="${type}" name="${name}" value="${value}"${type === "radio" ? " required" : ""}>
   ${diagram}
@@ -193,7 +193,7 @@ export function buildPages(site, prices) {
           ],
           total: money(exOnce + P.once.steps),
           unit: "Per visit, plus GST",
-          monthly: "Whole winter: priced after a visit",
+          monthly: "Whole winter: free estimate at your home",
           booked: "Now",
           cleared: "Within 24 hours",
           live: true,
@@ -250,7 +250,7 @@ export function buildPages(site, prices) {
       <div>
         <p class="promise-figure num">${cm} cm</p>
         <h3>Whole winter</h3>
-        <p class="text-2">After every snowfall of ${cm} cm or more, from ${seasonLabel}, we clear your home within 24 hours after the snow stops. You don’t have to call. We visit first and give you a price for the winter.</p>
+        <p class="text-2">After every snowfall of ${cm} cm or more, from ${seasonLabel}, we clear your home within 24 hours after the snow stops. You don’t have to call. We visit first and give you a free estimate.</p>
       </div>
     </div>
   </div>
@@ -545,10 +545,10 @@ ${ctaBand("We’ll take care of the snow")}`,
   pages.push({
     path: "/prices/",
     title: "Snow Removal Prices in Regina | ClearLot YQR",
-    description: `Snow removal prices in Regina. Driveways from ${money(P.once.driveway.single)} per visit. Sidewalk, walkway and extras listed. Whole winter plans priced after a visit. Plus GST.`,
+    description: `Snow removal prices in Regina. Driveways from ${money(P.once.driveway.single)} per visit. Sidewalk, walkway and extras listed. Free estimates for whole winter plans. Plus GST.`,
     body: `<section class="page-head"><div class="wrap">
   <h1>Snow removal prices</h1>
-  <p class="lede">One-time prices are below: pick your driveway size, then add your sidewalk, walkway and any extras. For the whole winter, we visit your home and give you a price. Prices are in Canadian dollars, plus 5% GST.</p>
+  <p class="lede">One-time prices are below: pick your driveway size, then add your sidewalk, walkway and any extras. For the whole winter, we visit your home and give you a free estimate. Prices are in Canadian dollars, plus 5% GST.</p>
 </div></section>
 <section class="section-tight" style="padding-top:0">
   <div class="wrap split">
@@ -558,8 +558,8 @@ ${ctaBand("We’ll take care of the snow")}`,
         <h3>One time</h3>
         <p>A single visit, cleared within 24 hours of your booking.</p>
         <h3>Whole winter</h3>
-        <p>Every snowfall of ${cm} cm or more, from ${seasonLabel}, cleared within 24 hours after the snow stops. We visit your home first and give you one price for the winter. It does not go up if it snows a lot.</p>
-        <p><a class="btn btn-quiet" href="/book/?plan=winter">Ask for a winter estimate</a></p>
+        <p>Every snowfall of ${cm} cm or more, from ${seasonLabel}, cleared within 24 hours after the snow stops. We visit your home first and give you a free estimate, one price for the winter. It does not go up if it snows a lot.</p>
+        <p><a class="btn btn-quiet" href="/book/?plan=winter">Ask for a free estimate</a></p>
         <h3>Paying</h3>
         <p>Nothing is charged online. We call to confirm your booking and arrange payment. The whole winter plan can be paid all at once or month by month, November to March.</p>
       </div>
